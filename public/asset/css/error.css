@@ -1,0 +1,43 @@
+body {
+    min-height: 100vh;
+    background: linear-gradient(145deg, #edf2ff 0%, #f8f9fc 45%, #e6efff 100%);
+}
+
+.error-wrap {
+    min-height: 100vh;
+}
+
+.error-card {
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 .9rem 2rem rgba(58, 59, 69, .15);
+    overflow: hidden;
+}
+
+.error-side {
+    background: linear-gradient(160deg, #224abe 0%, #4e73df 100%);
+    color: #fff;
+}
+
+.error-code {
+    font-size: 72px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 2px;
+}
+
+.icon-badge {
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, .2);
+    font-size: 22px;
+}
+
+.btn-soft {
+    border-radius: 10px;
+    padding: .5rem 1rem;
+}

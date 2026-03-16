@@ -1,0 +1,39 @@
+
+    /* Paksa jarak antar tombol di kolom Action */
+    .gap-2 {
+        gap: 0.5rem !important;
+    }
+    /* Warna header tabel agar konsisten biru */
+    #perm-table thead th {
+        background-color: #4e73df !important;
+        color: white;
+        text-align: center;
+    }
+    /* Rapikan margin search box */
+    .dataTables_filter input {
+        margin-left: 0.5em;
+        display: inline-block;
+        width: auto;
+    }
+
+    .dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+    display: flex;
+    align-items: center;
+}
+
+.dataTables_wrapper .dataTables_filter {
+    justify-content: flex-end;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    border-radius: 8px;
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    border-radius: 8px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+}

@@ -1,0 +1,55 @@
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #eef2ff 0%, #f8f9fc 50%, #e8f0ff 100%);
+        }
+
+        .login-wrapper {
+            min-height: 100vh;
+        }
+
+        .login-shell {
+            border: 0;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 0.8rem 2rem rgba(58, 59, 69, 0.16);
+        }
+
+        .login-hero {
+            background: linear-gradient(160deg, #224abe 0%, #007bff 100%);
+            color: #fff;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            width: 44px;
+            height: 44px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .login-card {
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .brand-logo {
+            width: 76px;
+            height: 76px;
+            object-fit: cover;
+            border-radius: 14px;
+            border: 1px solid #e3e6f0;
+            background: #fff;
+        }
+
+        .form-control {
+            height: calc(1.6em + .85rem + 2px);
+            border-radius: 0.6rem;
+        }
+
+        .btn-login {
+            border-radius: 0.6rem;
+            padding: .62rem .75rem;
+        }

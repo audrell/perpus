@@ -1,0 +1,186 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Arr;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Yajra\DataTables\Facades\DataTables;
+
+class UserController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
+            $users = User::with('roles')->select('users.*');
+
+            return DataTables::eloquent($users)
+                ->addIndexColumn()
+                ->addColumn('nomor', function () {
+                    static $counter = 0;
+
+                    return ++$counter;
+                })
+                ->addColumn('roles', function (User $user) {
+                    if ($user->roles->isEmpty()) {
+                        return '<span class="badge badge-secondary">No Role</span>';
+                    }
+
+                    return $user->roles
+                        ->map(function ($role) {
+                            return '<span class="badge bg-label-primary mb-1 mr-1">' . e($role->name) . '</span>';
+                        })
+                        ->implode(' ');
+                })
+                ->addColumn('action', function (User $user) {
+                    return '<button type="button" class="btn btn-info btn-sm mr-1" data-toggle="modal" data-target="#modalShowUser' .
+                        $user->id .
+                        '">
+                            <i class="fa fa-eye"></i>
+                        </button>
+                        <button type="button" class="btn btn-warning btn-sm mr-1" data-toggle="modal" data-target="#modalEditUser' .
+                        $user->id .
+                        '">
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <form method="POST" action="' .
+                        route('users.destroy', $user->id) .
+                        '" class="delete-form" style="display:inline;">
+                            ' . csrf_field() . '
+                            <input name="_method" type="hidden" value="DELETE">
+                            <button type="button" class="btn btn-danger btn-sm show_confirm">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </form>';
+                })
+                ->rawColumns(['nomor', 'roles', 'action'])
+                ->make(true);
+        }
+
+        return view('users.index', $this->getIndexData());
+    }
+
+    /**
+     * Data kebutuhan view index user berbasis modal.
+     */
+    protected function getIndexData(): array
+    {
+        return [
+            'data' => User::with('roles')->latest()->get(),
+            'roles' => Role::pluck('name', 'name')->all(),
+        ];
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create(): View
+    {
+        return view('users.index', $this->getIndexData());
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $this->validate($request, [
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|same:confirm-password',
+            'roles' => 'required',
+        ]);
+
+        $input = $request->all();
+        $input['password'] = Hash::make($input['password']);
+
+        $user = User::create($input);
+        $user->assignRole($request->input('roles'));
+
+        return redirect()->route('users.index')->with('success', 'User created successfully');
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id): View
+    {
+        return view('users.index', $this->getIndexData());
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id): View
+    {
+        return view('users.index', $this->getIndexData());
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id): RedirectResponse
+    {
+        // dd($request->all());
+        $this->validate($request, [
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'password' => 'same:confirm-password',
+            'roles' => 'required',
+        ]);
+
+        $input = $request->all();
+        if (!empty($input['password'])) {
+            $input['password'] = Hash::make($input['password']);
+        } else {
+            $input = Arr::except($input, ['password']);
+        }
+
+        $user = User::find($id);
+        $user->update($input);
+        DB::table('model_has_roles')->where('model_id', $id)->delete();
+
+        $user->assignRole($request->input('roles'));
+
+        return redirect()->route('users.index')->with('success', 'User updated successfully');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id): RedirectResponse
+    {
+        User::find($id)->delete();
+
+        return redirect()->route('users.index')->with('success', 'User deleted successfully');
+    }
+}
