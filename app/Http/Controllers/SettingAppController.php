@@ -30,8 +30,16 @@ class SettingAppController extends Controller
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->storeAs('uploads/logos', $filename, 'public');
+            $filename = time() . '-' . $file->getClientOriginalName();
+            $storageDir = public_path('storage');
+            $destinationPath = public_path('storage/uploads/logos');
+
+            // Pastikan folder uploads/logos ada
+            if (!is_dir($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $file->move($destinationPath, $filename);
             $data['image'] = $filename;
         }
 
@@ -61,10 +69,16 @@ class SettingAppController extends Controller
             // Simpan file baru ke dalam public/storage/uploads/logos
             $file = $request->file('image');
             $filename = time() . '-' . $file->getClientOriginalName();
+            $storageDir = public_path('storage');
             $destinationPath = public_path('storage/uploads/logos');
 
-            // Pastikan folder tujuan ada
-            if (!file_exists($destinationPath)) {
+            // Pastikan folder storage ada
+            if (!is_dir($storageDir)) {
+                mkdir($storageDir, 0755, true);
+            }
+
+            // Pastikan folder uploads/logos ada
+            if (!is_dir($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
 
