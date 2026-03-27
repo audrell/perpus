@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\BookController;
 
 // Public routes
 Route::get('/', function () {
@@ -35,3 +37,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('roles', App\Http\Controllers\RoleController::class);
     Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])->name('logout');
 });
+
+    Route::resource('categories', CategoryController::class);
+    Route::resource('books', BookController::class);

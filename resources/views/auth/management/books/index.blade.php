@@ -1,0 +1,160 @@
+@extends('layouts.admin')
+@section('title', 'Books Management')
+
+@push('styles')
+    <link href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap4.min.css" rel="stylesheet">
+    <style>
+        .badge-stock {
+            font-size: 0.85rem;
+        }
+    </style>
+@endpush
+
+@section('content')
+    <div class="row mb-3">
+        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap">
+            <div class="mb-2 mb-lg-0">
+                <h4 class="text-dark">Manajemen Buku</h4>
+            </div>
+            <div class="text-right">
+                <button class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#createBookModal">
+                    <i class="fas fa-plus fa-sm text-white-50"></i> Tambah Buku
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    @include('auth.management.books.modals.create')
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered" id="data-books" width="100%">
+                    <thead>
+                        <tr class="bg-primary text-white">
+                            <th>No</th>
+                            <th>ISBN</th>
+                            <th>Judul</th>
+                            <th>Penulis</th>
+                            <th>Penerbit</th>
+                            <th>Year</th>
+                            <th>Lokasi Rak</th>
+                            <th>Kategori</th>
+                            <th>Stok total</th>
+                            <th>Stok available</th>
+                            <th>Cover Path</th>
+                            <th width="100px">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#data-books').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                autoWidth: false,
+                ajax: "{{ route('books.index') }}",
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'isbn',
+                        name: 'isbn'
+                    },
+                    {
+                        data: 'title',
+                        name: 'title'
+                    },
+                    {
+                        data: 'author',
+                        name: 'author'
+                    },
+                    {
+                        data: 'publisher',
+                        name: 'publisher'
+                    },
+                    {
+                        data: 'year',
+                        name: 'year'
+                    },
+                    {
+                        data: 'rack_location',
+                        name: 'rack_location'
+                    },
+                    {
+                        data: 'category',
+                        name: 'category'
+                    },
+                    {
+                        data: 'quantity_total',
+                        name: 'quantity_total'
+                    },
+                    {
+                        data: 'quantity_available',
+                        name: 'quantity_available'
+                    },
+                    {
+                        data: 'cover',
+                        name: 'cover',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    },
+                ]
+            });
+        });
+
+        // SweetAlert Delete Confirmation
+        $(document).on('click', '.show_confirm', function(event) {
+            event.preventDefault();
+            var form = $(this).closest('form');
+            Swal.fire({
+                title: 'Apakah anda yakin?',
+                text: 'Data buku ini akan dihapus permanen!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    </script>
+@endpush

@@ -18,6 +18,7 @@
             <span>Home</span></a>
     </li>
 
+
     @canany(['users.index', 'roles.index', 'permissions.index'])
         <div class="sidebar-heading">
             User Permissions
@@ -60,7 +61,7 @@
         </li>
     @endcanany
 
-    
+
     @canany(['settings.index'])
         @can('settings.index')
             <li class="nav-item {{ request()->is('settings*') ? 'active' : '' }}">
@@ -71,5 +72,25 @@
             </li>
         @endcan
     @endcanany
+
+    @can('categories.index')
+        <li class="nav-item {{ request()->is('categories*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('categories.index') }}">
+                <i class="fas fa-fw fa-cog"></i>
+                <span>Category </span>
+            </a>
+        </li>
+    @endcan
+
+
+    @can('books.index')
+        <li class="nav-item {{ request()->is('books*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('books.index') }}">
+                <i class="fas fa-fw fa-cog"></i>
+                <span>Books </span>
+            </a>
+        </li>
+    @endcan
+
 
 </ul>
