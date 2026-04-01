@@ -53,6 +53,7 @@
                         <tr class="bg-primary text-white">
                             <th>No</th>
                             <th>Nama Kategori</th>
+                            <th width="100px">Jumlah Total</th>
                             <th width="150px">Aksi</th>
                         </tr>
                     </thead>
@@ -86,6 +87,10 @@
                     {
                         data: 'name',
                         name: 'name'
+                    },
+                    {
+                        data: 'jumlah_total',
+                        name: 'jumlah_total '
                     },
                     {
                         data: 'action',

@@ -17,13 +17,46 @@
             <div class="mb-2 mb-lg-0">
                 <h4 class="text-dark">Manajemen Buku</h4>
             </div>
-            <div class="text-right">
-                <button class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#createBookModal">
-                    <i class="fas fa-plus fa-sm text-white-50"></i> Tambah Buku
-                </button>
+
+          <div class="d-flex flex-wrap justify-content-end" style="gap:.4rem;">
+    <a href="{{ route('books.import.template') }}" class="btn btn-success btn-sm">
+        <i class="fas fa-file-download mr-1"></i> Download Template Import
+    </a>
+
+    <button type="button" class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#modalImportBook">
+        <i class="fas fa-file-upload mr-1"></i> Upload Import
+    </button>
+
+    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalCreateBook">
+        Create New Book
+    </button>
+</div>
+
+
+    <div class="modal fade" id="modalImportBook" tabindex="-1" role="dialog" aria-labelledby="modalImportBookLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalImportBookLabel">IMPORT DATA BUKU</h5>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
             </div>
+            <form action="{{ route('books.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">PILIH FILE EXCEL</label>
+                        <input type="file" name="import_file" class="form-control" accept=".xlsx, .xls" required>
+                        <small class="text-muted">Format file: .xlsx atau .xls</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">TUTUP</button>
+                    <button type="submit" class="btn btn-success">MULAI IMPORT</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -43,7 +76,7 @@
                     <thead>
                         <tr class="bg-primary text-white">
                             <th>No</th>
-                            <th>ISBN</th>
+                            <th>Cover Path</th>
                             <th>Judul</th>
                             <th>Penulis</th>
                             <th>Penerbit</th>
@@ -52,7 +85,7 @@
                             <th>Kategori</th>
                             <th>Stok total</th>
                             <th>Stok available</th>
-                            <th>Cover Path</th>
+                            <th>ISBN</th>
                             <th width="100px">Aksi</th>
                         </tr>
                     </thead>
@@ -62,6 +95,10 @@
             </div>
         </div>
     </div>
+    @foreach ($books as $book)
+        @include('auth.management.books.modals.show', ['book' => $book])
+        @include('auth.management.books.modals.edit', ['book' => $book, 'categories' => $categories])
+    @endforeach
 @endsection
 
 @push('scripts')
@@ -86,8 +123,10 @@
                         searchable: false
                     },
                     {
-                        data: 'isbn',
-                        name: 'isbn'
+                        data: 'cover',
+                        name: 'cover',
+                        orderable: false,
+                        searchable: false
                     },
                     {
                         data: 'title',
@@ -122,10 +161,8 @@
                         name: 'quantity_available'
                     },
                     {
-                        data: 'cover',
-                        name: 'cover',
-                        orderable: false,
-                        searchable: false
+                        data: 'isbn',
+                        name: 'isbn'
                     },
                     {
                         data: 'action',

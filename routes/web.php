@@ -1,8 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ErrorTestController;
+use App\Http\Controllers\HomeController;
+use Illuminate\Support\Facades\Route;
+
+
+
 
 // Public routes
 Route::get('/', function () {
@@ -40,3 +46,31 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('categories', CategoryController::class);
     Route::resource('books', BookController::class);
+
+    // excel
+
+Route::middleware(['auth'])->group(function () {
+
+    // ===== ROUTE 1: DOWNLOAD TEMPLATE =====
+    // Method: GET
+    // URL: /books/import/template
+    // Controller Method: downloadImportTemplate()
+    Route::get(
+        'books/import/template',
+        [App\Http\Controllers\BookController::class, 'downloadImportTemplate']
+    )->name('books.import.template');
+
+    // ===== ROUTE 2: UPLOAD FILE =====
+    // Method: POST
+    // URL: /books/import
+    // Body: form-data dengan "import_file"
+    // Controller Method: import()
+    Route::post(
+        'books/import',
+        [App\Http\Controllers\BookController::class, 'import']
+    )->name('books.import');
+
+    // ===== ROUTE 3: CRUD BOOKS (Standard Resource) =====
+    Route::resource('books', App\Http\Controllers\BookController::class);
+});
+

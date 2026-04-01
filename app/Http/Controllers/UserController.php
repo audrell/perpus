@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+
+use App\Models\Book;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
+use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Permission\Models\Role;
 use Yajra\DataTables\Facades\DataTables;
+
 
 class UserController extends Controller
 {
@@ -20,16 +25,16 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    function __construct()
+
+{
+    $this->middleware('permission:users.index|users.create|users.edit|users.delete', ['only' => ['index', 'store']]);
+    $this->middleware('permission:users.create', ['only' => ['create', 'store']]);
+    $this->middleware('permission:users.edit', ['only' => ['edit', 'update']]);
+    $this->middleware('permission:users.delete', ['only' => ['destroy']]);
+}
     public function index(Request $request)
     {
-
-         function __construct()
-    {
-        $this->middleware('permission:users.index|users.create|users.edit|users.delete', ['only' => ['index', 'store']]);
-        $this->middleware('permission:users.create', ['only' => ['create', 'store']]);
-        $this->middleware('permission:users.edit', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:users.delete', ['only' => ['destroy']]);
-    }
 
         if ($request->ajax()) {
             $users = User::with('roles')->select('users.*');
@@ -192,4 +197,15 @@ class UserController extends Controller
 
         return redirect()->route('users.index')->with('success', 'User deleted successfully');
     }
+
+/**
+ * USER UPLOAD FILE EXCEL
+ * Endpoint: POST /books/import
+ * Body: form-data dengan key "import_file" (file Excel)
+ * Response: Redirect ke /books dengan message success/error
+ */
+
+
+
+
 }

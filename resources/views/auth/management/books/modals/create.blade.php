@@ -1,12 +1,12 @@
-<div class="modal fade" id="createBookModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
+<div class="modal fade" id="modalCreateBook" tabindex="-1" role="dialog" aria-labelledby="modalCreateBookLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document"> <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="exampleModalLabel">Tambah Buku Baru</h5>
-                <button type="button" class="close text-white" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+    <h5 class="modal-title" id="modalCreateBookLabel">Add New Book</h5>
+    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
             <form action="{{ route('books.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
@@ -71,4 +71,4 @@
             </form>
         </div>
     </div>
-</div>
+ </div>

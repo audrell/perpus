@@ -7,18 +7,22 @@
 @endpush
 
 @section('content')
-    <div class="row mb-3">
-        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap">
-            <div class="mb-2 mb-lg-0">
-                <h4 class="text-dark">User Management</h4>
-            </div>
-            <div class="text-right">
-                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalCreateUser">
+   <div class="container-fluid">
+    <div class="row mb-2">
+        <div class="col-12">
+            <h3>User Management</h3>
+        </div>
+    </div>
+
+    \
+
+                <a href="{{ route('users.create') }}" class="btn btn-primary btn-sm">
                     Create New User
-                </button>
+                </a>
             </div>
         </div>
     </div>
+</div>
 
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -64,6 +68,9 @@
             </div>
         </div>
     </div>
+
+    <!-- modal -->
+  
 
     @foreach ($data as $user)
         @include('users.modals.show', ['user' => $user])

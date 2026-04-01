@@ -62,6 +62,22 @@
     @endcanany
 
 
+
+    <li class="nav-item {{ request()->is('categories*') || request()->is('books*') ? 'active' : '' }}">
+        <a class="nav-link {{ request()->is('categories*') || request()->is('books*') ? '' : 'collapsed' }}"
+            href="#" data-toggle="collapse" data-target="#collapseDataMaster" aria-expanded="true"
+            aria-controls="collapseDataMaster">
+            <i class="fas fa-fw fa-database"></i>
+            <span>data master</span>
+        </a>
+        <div id="collapseDataMaster" class="collapse {{ request()->is('categories*') || request()->is('books*') ? 'show' : '' }}"
+            aria-labelledby="headingDataMaster" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item {{ request()->is('categories*') ? 'active' : '' }}" href="{{ route('categories.index') }}">kategori</a>
+                <a class="collapse-item {{ request()->is('books*') ? 'active' : '' }}" href="{{ route('books.index') }}">buku</a>
+            </div>
+        </div>
+    </li>
     @canany(['settings.index'])
         @can('settings.index')
             <li class="nav-item {{ request()->is('settings*') ? 'active' : '' }}">
@@ -72,25 +88,5 @@
             </li>
         @endcan
     @endcanany
-
-    @can('categories.index')
-        <li class="nav-item {{ request()->is('categories*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('categories.index') }}">
-                <i class="fas fa-fw fa-cog"></i>
-                <span>Category </span>
-            </a>
-        </li>
-    @endcan
-
-
-    @can('books.index')
-        <li class="nav-item {{ request()->is('books*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('books.index') }}">
-                <i class="fas fa-fw fa-cog"></i>
-                <span>Books </span>
-            </a>
-        </li>
-    @endcan
-
 
 </ul>
