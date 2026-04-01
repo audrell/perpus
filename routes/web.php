@@ -72,5 +72,6 @@ Route::middleware(['auth'])->group(function () {
 
     // ===== ROUTE 3: CRUD BOOKS (Standard Resource) =====
     Route::resource('books', App\Http\Controllers\BookController::class);
+    //
 });
 
