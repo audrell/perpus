@@ -33,7 +33,7 @@ class MemberObserver
      */
     public function deleted(User $user): void
     {
-        //
+        Member::where('user_id', $user->id)->delete();
     }
 
     /**
