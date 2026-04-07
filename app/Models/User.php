@@ -10,15 +10,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    public function isAdmin()
-    {
-        return $this->role === 'admin';
-    }
-
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasRoles;
-
-    use HasFactory, Notifiable;
+    use HasRoles, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -45,5 +38,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Relasi One to One dengan Member
+     */
+    public function member()
+    {
+        return $this->hasOne(Member::class, 'user_id', 'id');
     }
 }

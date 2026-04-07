@@ -18,11 +18,8 @@
             <span>Home</span></a>
     </li>
 
-
     @canany(['users.index', 'roles.index', 'permissions.index'])
-        <div class="sidebar-heading">
-            User Permissions
-        </div>
+        <div class="sidebar-heading">User Management</div>
         <li
             class="nav-item {{ request()->is('users*') || request()->is('roles*') || request()->is('permissions*') ? 'active' : '' }}">
             <a class="nav-link {{ request()->is('users*') || request()->is('roles*') || request()->is('permissions*') ? '' : 'collapsed' }}"
@@ -38,22 +35,49 @@
                 <div class="bg-white py-2 collapse-inner rounded">
                     @can('users.index')
                         <a class="collapse-item {{ request()->is('users*') ? 'active' : '' }}"
-                            href="{{ route('users.index') }}">
-                            User
+                            href="{{ route('users.index') }}"> Users
                         </a>
                     @endcan
 
                     @can('roles.index')
                         <a class="collapse-item {{ request()->is('roles*') ? 'active' : '' }}"
-                            href="{{ route('roles.index') }}">
-                            Role
+                            href="{{ route('roles.index') }}"> Roles
                         </a>
                     @endcan
 
                     @can('permissions.index')
                         <a class="collapse-item {{ request()->is('permissions*') ? 'active' : '' }}"
-                            href="{{ route('permissions.index') }}">
-                            Permissions
+                            href="{{ route('permissions.index') }}"> Permissions
+                        </a>
+                    @endcan
+                </div>
+            </div>
+        </li>
+        <hr class="sidebar-divider">
+    @endcanany
+
+
+    @canany(['categories.index', 'books.index'])
+        <div class="sidebar-heading">Data Master</div>
+        <li class="nav-item {{ request()->is('categories*') || request()->is('books*') ? 'active' : '' }}">
+            <a class="nav-link {{ request()->is('categories*') || request()->is('books*') ? '' : 'collapsed' }}"
+                href="#" data-toggle="collapse" data-target="#collapseDataMaster" aria-expanded="true"
+                aria-controls="collapseDataMaster">
+                <i class="fas fa-fw fa-database"></i>
+                <span>Data Master</span>
+            </a>
+            <div id="collapseDataMaster"
+                class="collapse {{ request()->is('categories*') || request()->is('books*') ? 'show' : '' }}"
+                aria-labelledby="headingDataMaster" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    @can('categories.index')
+                        <a class="collapse-item {{ request()->is('categories*') ? 'active' : '' }}"
+                            href="{{ route('categories.index') }}">Categories
+                        </a>
+                    @endcan
+                    @can('books.index')
+                        <a class="collapse-item {{ request()->is('books*') ? 'active' : '' }}"
+                            href="{{ route('books.index') }}">Books
                         </a>
                     @endcan
                 </div>
@@ -62,40 +86,28 @@
     @endcanany
 
 
+    @can('loans.index')
+        <div class="sidebar-heading">Operations</div>
+        <li class="nav-item {{ request()->is('loans*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('loans.index') }}">
+                <i class="fas fa-fw fa-handshake"></i>
+                <span>Loans</span>
+            </a>
+        </li>
+        <hr class="sidebar-divider">
+    @endcan
 
-    <li class="nav-item {{ request()->is('categories*') || request()->is('books*') ? 'active' : '' }}">
-        <a class="nav-link {{ request()->is('categories*') || request()->is('books*') ? '' : 'collapsed' }}"
-            href="#" data-toggle="collapse" data-target="#collapseDataMaster" aria-expanded="true"
-            aria-controls="collapseDataMaster">
-            <i class="fas fa-fw fa-database"></i>
-            <span>Data master</span>
-        </a>
-        <div id="collapseDataMaster" class="collapse {{ request()->is('categories*') || request()->is('books*') ? 'show' : '' }}"
-            aria-labelledby="headingDataMaster" data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item {{ request()->is('categories*') ? 'active' : '' }}" href="{{ route('categories.index') }}">Categori</a>
-                <a class="collapse-item {{ request()->is('books*') ? 'active' : '' }}" href="{{ route('books.index') }}">Buku</a>
-            </div>
-        </div>
-    </li>
-    @canany(['settings.index'])
-        @can('settings.index')
-            <li class="nav-item {{ request()->is('settings*') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('settings.index') }}">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>Setting </span>
-                </a>
-            </li>
-        @endcan
-    @endcanany
 
-     @can('loans.index')
-            <li class="nav-item {{ request()->is('loans*') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('loans.index') }}">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>Loans </span>
-                </a>
-            </li>
-        @endcan
+    @can('settings.index')
+        <div class="sidebar-heading">Configuration</div>
+        <li class="nav-item {{ request()->is('settings*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('settings.index') }}">
+                <i class="fas fa-fw fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </li>
+    @endcan
+
+    <hr class="sidebar-divider d-none d-md-block">
 
 </ul>

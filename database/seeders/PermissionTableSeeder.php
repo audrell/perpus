@@ -28,7 +28,19 @@ class PermissionTableSeeder extends Seeder
             'roles.create',
             'roles.edit',
             'roles.delete',
+            'books.index',
+            'books.create',
+            'books.edit',
+            'books.delete',
+            'categories.index',
+            'categories.create',
+            'categories.edit',
+            'categories.delete',
             'settings.index',
+            'loans.index',
+            'loans.create',
+            'loans.edit',
+            'loans.delete',
         ];
 
         foreach ($permissions as $permission) {

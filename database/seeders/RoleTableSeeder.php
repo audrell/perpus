@@ -19,7 +19,7 @@ class RoleTableSeeder extends Seeder
         ]);
 
         Role::firstOrCreate([
-            'name' => 'user',
+            'name' => 'member',
             'guard_name' => 'web',
         ]);
 

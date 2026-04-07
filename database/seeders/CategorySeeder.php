@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
+use App\Models\Category;
 
 class CategorySeeder extends Seeder
 {
@@ -13,11 +13,17 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        $categories = ['novel', 'sains', 'sejarah', 'komputer'];
-        foreach ($categories as $cat) {
-            \App\Models\Category::create([
-                'name' => $cat,
-                'slug' => Str::slug($cat),
+        $categories = [
+            ['name' => 'Novel', 'slug' => 'novel'],
+            ['name' => 'Sains', 'slug' => 'sains'],
+            ['name' => 'Sejarah', 'slug' => 'sejarah'],
+            ['name' => 'Komputer', 'slug' => 'komputer'],
+        ];
+
+        foreach ($categories as $category) {
+            Category::create([
+                'name' => $category['name'],
+                'slug' => $category['slug'],
             ]);
         }
     }

@@ -15,13 +15,8 @@ class UserTableSeeder extends Seeder
             [
                 'name' => 'Admin',
                 'password' => Hash::make('123456'),
-            ]
+            ],
         );
-
         $admin->syncRoles(['admin']);
-
-        User::factory(5)->create()->each(function (User $user): void {
-            $user->syncRoles(['user']);
-        });
     }
 }

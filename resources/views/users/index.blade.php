@@ -7,7 +7,6 @@
 @endpush
 
 @section('content')
-<div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h3 class="h3 mb-0 text-gray-800">User Management</h3>
         <button type="button" class="btn btn-primary btn-sm shadow-sm" data-toggle="modal" data-target="#modalCreateUser">
@@ -57,14 +56,13 @@
             </div>
         </div>
     </div>
-</div>
 
-@include('users.modals.create', ['roles' => $roles])
+    @include('users.modals.create', ['roles' => $roles])
 
-@foreach ($data as $user)
-    @include('users.modals.show', ['user' => $user])
-    @include('users.modals.edit', ['user' => $user, 'roles' => $roles])
-@endforeach
+    @foreach ($data as $user)
+        @include('users.modals.show', ['user' => $user])
+        @include('users.modals.edit', ['user' => $user, 'roles' => $roles])
+    @endforeach
 
 @endsection
 
@@ -83,12 +81,32 @@
                 responsive: true,
                 autoWidth: false,
                 ajax: "{{ route('users.index') }}",
-                columns: [
-                    { data: 'nomor', name: 'nomor', className: 'text-center' },
-                    { data: 'name', name: 'name' },
-                    { data: 'email', name: 'email' },
-                    { data: 'roles', name: 'roles', searchable: false, orderable: false },
-                    { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' }
+                columns: [{
+                        data: 'nomor',
+                        name: 'nomor',
+                        className: 'text-center'
+                    },
+                    {
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'email',
+                        name: 'email'
+                    },
+                    {
+                        data: 'roles',
+                        name: 'roles',
+                        searchable: false,
+                        orderable: false
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center'
+                    }
                 ]
             });
 

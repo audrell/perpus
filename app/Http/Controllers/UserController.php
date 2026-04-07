@@ -4,19 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Models\Book;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
 use Yajra\DataTables\Facades\DataTables;
-
 
 class UserController extends Controller
 {
@@ -26,19 +23,16 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     function __construct()
-
-{
-    $this->middleware('permission:users.index|users.create|users.edit|users.delete', ['only' => ['index', 'store']]);
-    $this->middleware('permission:users.create', ['only' => ['create', 'store']]);
-    $this->middleware('permission:users.edit', ['only' => ['edit', 'update']]);
-    $this->middleware('permission:users.delete', ['only' => ['destroy']]);
-}
+    {
+        $this->middleware('permission:users.index|users.create|users.edit|users.delete', ['only' => ['index', 'store']]);
+        $this->middleware('permission:users.create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:users.edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:users.delete', ['only' => ['destroy']]);
+    }
     public function index(Request $request)
     {
-
         if ($request->ajax()) {
             $users = User::with('roles')->select('users.*');
-
             return DataTables::eloquent($users)
                 ->addIndexColumn()
                 ->addColumn('nomor', function () {
@@ -71,7 +65,9 @@ class UserController extends Controller
                         <form method="POST" action="' .
                         route('users.destroy', $user->id) .
                         '" class="delete-form" style="display:inline;">
-                            ' . csrf_field() . '
+                            ' .
+                        csrf_field() .
+                        '
                             <input name="_method" type="hidden" value="DELETE">
                             <button type="button" class="btn btn-danger btn-sm show_confirm">
                                 <i class="fa fa-trash"></i>
@@ -92,8 +88,8 @@ class UserController extends Controller
     {
         return [
             'data' => User::with('roles')->latest()->get(),
-            'roles' => Role::pluck('name', 'name')->all(),
-        ];
+            'roles' => Role::where('name', '!=', 'member')
+            ->pluck('name', 'name'),        ];
     }
 
     /**
@@ -112,7 +108,7 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $this->validate($request, [
             'name' => 'required',
@@ -124,7 +120,9 @@ class UserController extends Controller
         $input = $request->all();
         $input['password'] = Hash::make($input['password']);
 
-        $user = User::create($input);
+        $user = User::withoutEvents(function () use ($input) {
+            return User::create($input);
+        });
         $user->assignRole($request->input('roles'));
 
         return redirect()->route('users.index')->with('success', 'User created successfully');
@@ -161,7 +159,6 @@ class UserController extends Controller
      */
     public function update(Request $request, $id): RedirectResponse
     {
-        // dd($request->all());
         $this->validate($request, [
             'name' => 'required',
             'email' => 'required|email|unique:users,email,' . $id,
@@ -178,8 +175,8 @@ class UserController extends Controller
 
         $user = User::find($id);
         $user->update($input);
-        DB::table('model_has_roles')->where('model_id', $id)->delete();
 
+        DB::table('model_has_roles')->where('model_id', $id)->delete();
         $user->assignRole($request->input('roles'));
 
         return redirect()->route('users.index')->with('success', 'User updated successfully');
@@ -193,19 +190,9 @@ class UserController extends Controller
      */
     public function destroy($id): RedirectResponse
     {
-        User::find($id)->delete();
+        $user = User::find($id);
+        $user->delete();
 
         return redirect()->route('users.index')->with('success', 'User deleted successfully');
     }
-
-/**
- * USER UPLOAD FILE EXCEL
- * Endpoint: POST /books/import
- * Body: form-data dengan key "import_file" (file Excel)
- * Response: Redirect ke /books dengan message success/error
- */
-
-
-
-
 }

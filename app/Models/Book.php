@@ -14,7 +14,13 @@ class Book extends Model
         'slug',
         'author',
         'description',
+        'isbn',
+        'publisher',
+        'year',
+        'rack_location',
         'stock',
+        'quantity_total',
+        'quantity_available',
         'cover_path'
     ];
 
@@ -32,4 +38,3 @@ class Book extends Model
         return $this->belongsTo(Category::class);
     }
 }
-
