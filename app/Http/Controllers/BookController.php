@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
+use App\Exports\BooksExport;
 
 class BookController extends Controller
 {
@@ -330,6 +331,11 @@ public function import(Request $request): RedirectResponse
     // ========== STEP 7: RETURN RESPONSE ==========
     return redirect()->route('books.index')
         ->with('success', count($payloads) . ' buku berhasil diimport.');
+}
+
+public function export()
+{
+    return Excel::download(new BooksExport, 'Data-Buku-Perpustakaan.xlsx');
 }
 
 }

@@ -21,5 +21,7 @@ class AppServiceProvider extends ServiceProvider
         } else {
             View::share('setting', null);
         }
+
+         \App\Models\User::observe(\App\Observers\MemberObserver::class);
     }
 }

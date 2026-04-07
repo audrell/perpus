@@ -89,4 +89,13 @@
         @endcan
     @endcanany
 
+     @can('loans.index')
+            <li class="nav-item {{ request()->is('loans*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('loans.index') }}">
+                    <i class="fas fa-fw fa-cog"></i>
+                    <span>Loans </span>
+                </a>
+            </li>
+        @endcan
+
 </ul>

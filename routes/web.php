@@ -6,6 +6,8 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ErrorTestController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LoanController;
+
 
 
 
@@ -45,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
     Route::resource('categories', CategoryController::class);
-    Route::resource('books', BookController::class);
+
 
     // excel
 
@@ -60,6 +62,8 @@ Route::middleware(['auth'])->group(function () {
         [App\Http\Controllers\BookController::class, 'downloadImportTemplate']
     )->name('books.import.template');
 
+     Route::get('/books/export', [App\Http\Controllers\BookController::class, 'export'])->name('books.export');
+
     // ===== ROUTE 2: UPLOAD FILE =====
     // Method: POST
     // URL: /books/import
@@ -72,6 +76,11 @@ Route::middleware(['auth'])->group(function () {
 
     // ===== ROUTE 3: CRUD BOOKS (Standard Resource) =====
     Route::resource('books', App\Http\Controllers\BookController::class);
-    //
+
+    Route::get('/loans/create', [LoanController::class, 'create'])->name('loans.create');
+    Route::post('/loans', [LoanController::class, 'store'])->name('loans.store');
+    Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
+
+
 });
 
