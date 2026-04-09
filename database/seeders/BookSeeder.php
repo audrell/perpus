@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Book;
 use App\Models\Category;
+use Illuminate\Support\Str;
 
 class BookSeeder extends Seeder
 {
@@ -19,6 +20,7 @@ class BookSeeder extends Seeder
         Book::create([
             'category_id' => $novelCategory->id,
             'title'       => 'Laut Bercerita',
+            'slug'        => Str::slug('Laut Bercerita'),
             'isbn'        => '978-602-424-694-5',
             'author'      => 'Leila S. Chudori',
             'publisher'   => 'Kepustakaan Populer Gramedia',
@@ -33,6 +35,7 @@ class BookSeeder extends Seeder
         Book::create([
             'category_id' => $novelCategory->id,
             'title'       => '3726MDPL',
+            'slug'        => Str::slug('3726MDPL'),
             'isbn'        => '978-623-310-259-9',
             'author'      => 'Nurwina Sari',
             'publisher'   => 'Romancious',
@@ -47,6 +50,7 @@ class BookSeeder extends Seeder
         Book::create([
             'category_id' => $novelCategory->id,
             'title'       => 'Laskar Pelangi',
+            'slug'        => Str::slug('Laskar Pelangi'),
             'isbn'        => '978-979-500-954-0',
             'author'      => 'Andrea Hirata',
             'publisher'   => 'Bentang Pustaka',
@@ -62,6 +66,7 @@ class BookSeeder extends Seeder
         Book::create([
             'category_id' => $sainsCategory->id,
             'title'       => 'Pengantar Fisika Modern',
+            'slug'        => Str::slug('Pengantar Fisika Modern'),
             'isbn'        => '978-602-8637-99-1',
             'author'      => 'Kenneth S. Krane',
             'publisher'   => 'ITB Press',
@@ -76,6 +81,7 @@ class BookSeeder extends Seeder
         Book::create([
             'category_id' => $sainsCategory->id,
             'title'       => 'Biologi Sel dan Molekuler',
+            'slug'        => Str::slug('Biologi Sel dan Molekuler'),
             'isbn'        => '978-602-496-110-9',
             'author'      => 'Alberts, B.',
             'publisher'   => 'Penerbit UGM',
@@ -91,6 +97,7 @@ class BookSeeder extends Seeder
         Book::create([
             'category_id' => $sejarahCategory->id,
             'title'       => 'Sejarah Indonesia Modern',
+            'slug'        => Str::slug('Sejarah Indonesia Modern'),
             'isbn'        => '978-602-50524-0-7',
             'author'      => 'Ricklefs, M.C.',
             'publisher'   => 'Penerbit Serambi',
@@ -105,6 +112,7 @@ class BookSeeder extends Seeder
         Book::create([
             'category_id' => $sejarahCategory->id,
             'title'       => 'Peradaban pada Persimpangan Jalan',
+            'slug'        => Str::slug('Peradaban pada Persimpangan Jalan'),
             'isbn'        => '978-602-421-999-9',
             'author'      => 'Soekarno',
             'publisher'   => 'Kepustakaan Populer Gramedia',
@@ -120,6 +128,7 @@ class BookSeeder extends Seeder
         Book::create([
             'category_id' => $komputerCategory->id,
             'title'       => 'Clean Code',
+            'slug'        => Str::slug('Clean Code'),
             'isbn'        => '978-0132350884',
             'author'      => 'Robert C. Martin',
             'publisher'   => 'Prentice Hall',
@@ -134,6 +143,7 @@ class BookSeeder extends Seeder
         Book::create([
             'category_id' => $komputerCategory->id,
             'title'       => 'Design Patterns',
+            'slug'        => Str::slug('Design Patterns'),
             'isbn'        => '978-0201633610',
             'author'      => 'Gang of Four',
             'publisher'   => 'Addison-Wesley',
@@ -148,6 +158,7 @@ class BookSeeder extends Seeder
         Book::create([
             'category_id' => $komputerCategory->id,
             'title'       => 'The Pragmatic Programmer',
+            'slug'        => Str::slug('The Pragmatic Programmer'),
             'isbn'        => '978-0201616224',
             'author'      => 'David Thomas, Andrew Hunt',
             'publisher'   => 'Addison-Wesley',

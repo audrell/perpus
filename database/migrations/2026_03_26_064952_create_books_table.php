@@ -24,6 +24,7 @@ return new class extends Migration {
             $table->string('cover_path')->nullable();
             $table->integer('stock')->default(0);
             $table->timestamps();
+            $table->string('slug')->unique();
         });
     }
 

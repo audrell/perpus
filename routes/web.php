@@ -38,6 +38,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/loans/create', [App\Http\Controllers\LoanController::class, 'create'])->name('loans.create');
     Route::post('/loans', [App\Http\Controllers\LoanController::class, 'store'])->name('loans.store');
     Route::get('/loans', [App\Http\Controllers\LoanController::class, 'index'])->name('loans.index');
+    Route::post('/loans/approve/{id}', [App\Http\Controllers\LoanController::class, 'approve'])->name('book-loans.approve');
+    Route::post('/loans/reject/{id}', [\App\Http\Controllers\LoanController::class, 'reject'])->name('book-loans.reject');
+
 
     //route resource
     Route::resource('permissions', App\Http\Controllers\PermissionsController::class);

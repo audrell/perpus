@@ -33,13 +33,43 @@ class LoanController extends Controller
                     return '<span class="badge ' . $color[$row->approval_status] . '">' . $row->approval_status . '</span>';
                 })
                 ->addColumn('action', function ($row) {
-                    return '<a href="#" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></a>';
+                    $btn = '<div class="d-flex justify-content-center align-items-center">';
+                    $btn = '<a href="#" class="btn btn-info btn-sm mr-1"><i class="fas fa-eye"></i></a>';
+                    if ($row->approval_status == 'PENDING') {
+                        $btn .= '<button class="btn btn-sm btn-success approve-btn mr-1" data-id="' .  $row->id . '" title="Approve"> <i class="fas fa-check"></i></button>';
+                        $btn .='<button class="btn btn-sm btn-danger reject-btn" data-id="' .  $row->id . '" title="Reject"> <i class="fas fa-times"></i></button>';
+                    }
+                    $btn .= '</div>';
+                    return $btn;
                 })
-                ->rawColumns(['status', 'action'])
+
+                ->rawColumns(['approval_status', 'action'])
                 ->make(true);
         }
 
         return view('auth.loans.index');
+    }
+
+    public function approve($id)
+    {
+        $loan = Loan::findOrFail($id);
+        $loan->update(['approval_status' => 'APPROVED']);
+
+        return response()->json(['success' => 'Peminjaman berhasil disetujui']);
+    }
+
+    public function reject($id)
+    {
+        $loan = Loan::findOrFail($id);
+
+        DB::transaction(function () use ($loan) {
+            $loan->update(['approval_status' => 'REJECTED']);
+
+            foreach ($loan->details as $detail) {
+                $detail->book->increment('quantity_availible');
+            }
+        });
+        return response()->json(['success' => 'Peminjaman #' . $loan->loan_code . ' telah ditolak dan stok dikembalikan.']);
     }
 
     public function store(Request $request)
@@ -50,7 +80,6 @@ class LoanController extends Controller
             'book_ids' => 'required|array', // Harus pilih minimal 1 buku
         ]);
 
-
         // 2. Mulai Transaksi Database
         DB::beginTransaction();
 
@@ -59,7 +88,7 @@ class LoanController extends Controller
         try {
             // 3. Simpan ke Tabel Loans (Header)
             $loan = Loan::create([
-                'loan_code' => Loan::generateLoanCode(), // otomatis jadi LN-0001-dst
+                'loan_code' => $generatedCode, // otomatis jadi LN-0001-dst
                 'member_id' => $request->member_id,
                 'user_id' => Auth::id(), // mmengambil ID user yang lagi login
                 'loaned_at' => now(),
@@ -85,7 +114,7 @@ class LoanController extends Controller
                 }
             }
 
-                DB::commit();
+            DB::commit();
 
             return redirect()
                 ->back()
@@ -105,18 +134,6 @@ class LoanController extends Controller
         $books = \App\Models\Book::where('quantity_available', '>', 0)->get();
 
         return view('auth.loans.modals.create', compact('members', 'books'));
-    }
-
-    public function approve($id)
-    {
-        $loan = Loan::findOrFail($id);
-        $loan->update([
-            'approval_status' => 'APPROVED',
-            'approved_by' => Auth::id(), // admin yang klik setuju
-            'approved_at' => now(),
-        ]);
-
-        return redirect()->back()->with('success', 'Peminjaman telah disetujui.');
     }
 
     public function returnBook($id)
