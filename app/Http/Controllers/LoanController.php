@@ -16,34 +16,38 @@ class LoanController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $loans = \App\Models\Loan::with('member')->latest()->get();
+            $filter = $request->get('status_filter', 'active');
 
-            return DataTables::of($loans)
+            // Eager load relasi member supaya tidak berat (N+1 query)
+            $query = Loan::with(['member']);
+
+            // Logika Filter
+            if ($filter == 'active') {
+                $query->whereIn('approval_status', ['PENDING', 'APPROVED']);
+            } elseif ($filter == 'returned') {
+                $query->where('approval_status', 'RETURNED');
+            } elseif ($filter == 'rejected') {
+                $query->where('approval_status', 'REJECTED');
+            }
+
+            return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('member_name', function ($row) {
-                    return $row->member->name ?? '-';
-                })
-                // Di LoanController bagian index()
-                ->editColumn('approval_status', function ($row) {
-                    $color = [
-                        'PENDING' => 'badge-secondary',
-                        'APPROVED' => 'badge-success',
-                        'REJECTED' => 'badge-danger',
-                    ];
-                    return '<span class="badge ' . $color[$row->approval_status] . '">' . $row->approval_status . '</span>';
+                    return $row->member ? $row->member->name : '-';
                 })
                 ->addColumn('action', function ($row) {
-                    $btn = '<div class="d-flex justify-content-center align-items-center">';
-                    $btn = '<a href="#" class="btn btn-info btn-sm mr-1"><i class="fas fa-eye"></i></a>';
+                    $btn = '<button class="btn btn-info btn-sm show-btn" data-id="' . $row->id . '"><i class="fas fa-eye"></i></button> ';
+
                     if ($row->approval_status == 'PENDING') {
-                        $btn .= '<button class="btn btn-sm btn-success approve-btn mr-1" data-id="' .  $row->id . '" title="Approve"> <i class="fas fa-check"></i></button>';
-                        $btn .='<button class="btn btn-sm btn-danger reject-btn" data-id="' .  $row->id . '" title="Reject"> <i class="fas fa-times"></i></button>';
+                        $btn .= '<button class="btn btn-success btn-sm approve-btn" data-id="' . $row->id . '"><i class="fas fa-check"></i></button> ';
+                        $btn .= '<button class="btn btn-danger btn-sm reject-btn" data-id="' . $row->id . '"><i class="fas fa-times"></i></button>';
+                    } elseif ($row->approval_status == 'APPROVED') {
+                        $btn .= '<button class="btn btn-warning btn-sm return-btn" data-id="' . $row->id . '"><i class="fas fa-undo"></i></button>';
                     }
-                    $btn .= '</div>';
+
                     return $btn;
                 })
-
-                ->rawColumns(['approval_status', 'action'])
+                ->rawColumns(['action'])
                 ->make(true);
         }
 
@@ -60,16 +64,80 @@ class LoanController extends Controller
 
     public function reject($id)
     {
-        $loan = Loan::findOrFail($id);
+        $loan = Loan::with('loanItems.book')->findOrFail($id);
 
-        DB::transaction(function () use ($loan) {
-            $loan->update(['approval_status' => 'REJECTED']);
+        DB::beginTransaction();
 
-            foreach ($loan->details as $detail) {
-                $detail->book->increment('quantity_availible');
+        try {
+            $loan->update([
+                'approval_status' => 'REJECTED',
+            ]);
+
+            foreach ($loan->loanItems as $item) {
+                if ($item->book) {
+                    $item->book->increment('quantity_available');
+                }
             }
-        });
-        return response()->json(['success' => 'Peminjaman #' . $loan->loan_code . ' telah ditolak dan stok dikembalikan.']);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => 'Peminjaman #' . $loan->loan_code . ' telah ditolak dan stok buku dikembalikan.',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(
+                [
+                    'message' => 'Gagal menolak peminjaman: ' . $e->getMessage(),
+                ],
+                500,
+            );
+        }
+    }
+
+    public function show($id)
+    {
+        $loan = Loan::with(['member', 'loanItems.book'])->findOrFail($id);
+
+        return view('auth.loans.modals.show', compact('loan'))->render();
+    }
+
+    public function returnBook($id)
+    {
+        $loan = Loan::with('loanItems.book')->findOrFail($id);
+
+        if ($loan->approval_status !== 'APPROVED') {
+            return response()->json(['message' => 'Hanya buku APPROVED yang bisa dikembalikan'], 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $loan->update([
+                'approval_status' => 'RETURNED', // Tes pakai kata yang sudah pasti ada
+                'returned_at' => now(),
+            ]);
+
+            foreach ($loan->loanItems as $item) {
+                if ($item->book) {
+                    $item->book->increment('quantity_available');
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => 'Buku berhasil dikembalikan dan stok diperbarui!',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(
+                [
+                    'message' => 'Gagal: ' . $e->getMessage(),
+                ],
+                500,
+            );
+        }
     }
 
     public function store(Request $request)
@@ -134,38 +202,5 @@ class LoanController extends Controller
         $books = \App\Models\Book::where('quantity_available', '>', 0)->get();
 
         return view('auth.loans.modals.create', compact('members', 'books'));
-    }
-
-    public function returnBook($id)
-    {
-        $loan = Loan::with('loanItems')->findOrFail($id);
-
-        $dueDate = $loan->due_date;
-        $returnDate = now();
-        $fine = 0;
-
-        // dendaa
-        if ($returnDate->gt($dueDate)) {
-            $daysLate = $returnDate->diffInDays($dueDate);
-            $fine = $daysLate * 2000;
-        }
-
-        DB::transaction(function () use ($loan, $returnDate, $fine) {
-            //update status pinjaman
-            $loan->update([
-                'status' => 'RETURNED',
-                'returned_at' => $returnDate,
-                'fine_total' => $fine,
-            ]);
-
-            //kembalikan stok buku ke raak
-            foreach ($loan->loanItems as $item) {
-                $item->book->increment('quantity_available');
-            }
-        });
-
-        return redirect()
-            ->back()
-            ->with('success', 'Buku berhasil dikembalikan. Denda: Rp ' . number_format($fine));
     }
 }

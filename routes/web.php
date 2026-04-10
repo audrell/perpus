@@ -40,7 +40,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/loans', [App\Http\Controllers\LoanController::class, 'index'])->name('loans.index');
     Route::post('/loans/approve/{id}', [App\Http\Controllers\LoanController::class, 'approve'])->name('book-loans.approve');
     Route::post('/loans/reject/{id}', [\App\Http\Controllers\LoanController::class, 'reject'])->name('book-loans.reject');
-
+    Route::get('/loans/show/{id}', [\App\Http\Controllers\LoanController::class, 'show'])->name('loans.show');
+    Route::post('/loans/return/{id}', [\App\Http\Controllers\LoanController::class, 'returnBook'])->name('book-loans.return');
 
     //route resource
     Route::resource('permissions', App\Http\Controllers\PermissionsController::class);

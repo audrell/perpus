@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class LoanDetail extends Model
 {
 
-    protected $fillable = ['loan_id', 'book_id', 'is_returned', 'returned_at'];
+    protected $guarded = ['id'];
 
     public function loan() {
-    return $this->belongsTo(Loan::class);
+    return $this->belongsTo(Loan::class, 'loan_id');
 }
 
 public function book() {
-    return $this->belongsTo(Book::class);
+    return $this->belongsTo(Book::class, 'book_id');
 }
 }

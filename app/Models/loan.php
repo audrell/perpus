@@ -29,5 +29,5 @@ class Loan extends Model
     public function member() { return $this->belongsTo(Member::class); }
     public function user() { return $this->belongsTo(User::class); } // pemilik transaksi
     public function approvedBy() { return $this->belongsTo(User::class, 'approved_by'); }
-    public function loanItems() { return $this->hasMany(LoanDetail::class); }
+    public function loanItems() { return $this->hasMany(LoanDetail::class, 'loan_id'); }
 }
