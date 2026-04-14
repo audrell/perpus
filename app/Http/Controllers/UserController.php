@@ -88,8 +88,8 @@ class UserController extends Controller
     {
         return [
             'data' => User::with('roles')->latest()->get(),
-            'roles' => Role::where('name', '!=', 'member')
-            ->pluck('name', 'name'),        ];
+            'roles' => Role::where('name', '!=', 'member')->pluck('name', 'name'),
+        ];
     }
 
     /**
@@ -163,7 +163,7 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'same:confirm-password',
-            'roles' => 'required',
+            'roles' => 'nullable',
         ]);
 
         $input = $request->all();
@@ -174,6 +174,15 @@ class UserController extends Controller
         }
 
         $user = User::find($id);
+
+        if (!$user->hasRole(['member'])) {
+            $this->validate($request, [
+                'roles' => 'required',
+            ]);
+        } else ($user->hasRole(['member'])); {
+            # code...
+        }
+
         $user->update($input);
 
         DB::table('model_has_roles')->where('model_id', $id)->delete();

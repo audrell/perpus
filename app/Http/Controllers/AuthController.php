@@ -12,34 +12,31 @@ use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'email' => 'required|string|email|unique:users',
+    //         'password' => 'required|confirmed',
+    //     ]);
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|confirmed',
-        ]);
+    //     return DB::transaction(function () use ($request) {
+    //         $user = User::create([
+    //             'name' => $request->name,
+    //             'email' => $request->email,
+    //             'password' => Hash::make($request->password),
+    //         ]);
 
-        return DB::transaction(function () use ($request) {
+    //         Member::create([
+    //             'user_id' => $user->id,
+    //             'member_code' => Member::generateMemberCode(),
+    //             'name' => $user->name,
+    //             'is_active' => true,
+    //         ]);
 
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-            ]);
-
-
-            Member::create([
-                'user_id' => $user->id,
-                'member_code' => Member::generateMemberCode(),
-                'name' => $user->name,
-                'is_active' => true, 
-            ]);
-
-            return $user;
-        });
-    }
+    //         return $user;
+    //     });
+    // }
 
     public function showLogin()
     {
@@ -85,29 +82,30 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $validated = $request->validate(
-            [
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|max:255|unique:users,email',
-                'password' => 'required|string|min:8|confirmed',
-            ],
-            [
-                'name.required' => 'Nama wajib diisi.',
-                'email.required' => 'Email wajib diisi.',
-                'email.email' => 'Format email tidak valid.',
-                'email.unique' => 'Email sudah terdaftar.',
-                'password.required' => 'Password wajib diisi.',
-                'password.min' => 'Password minimal 8 karakter.',
-                'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            ],
-        );
+        // dd($request->all());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'phone' => 'required|numeric|digits_between:10,15',
+            'address' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
         ]);
+        Member::create([
+            'user_id' => $user->id,
+            'member_code' => Member::generateNextMemberCode(),
+            'name' => $user->name,
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
+            'is_active' => true,
+        ]);
 
+        $user->syncRoles(['member']);
         Auth::login($user);
         $request->session()->regenerate();
 

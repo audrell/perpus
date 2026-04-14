@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Loan extends Model
 {
-    protected $guarded = ['id'];
+    protected $guarded = [];
 
     // ubah string tanggal otomatis jadi objek Carbon (biar gampang dihitung dendanya)
     protected $casts = [
@@ -24,6 +24,11 @@ class Loan extends Model
         $string = preg_replace("/[^0-9]/", "", $latest->loan_code);
         return 'LN-' . sprintf('%04d', (int)$string + 1);
     }
+
+    public function loandetails() {
+        return $this->hasMany(LoanDetail::class, 'loan_id');
+    }
+
 
     // relasi
     public function member() { return $this->belongsTo(Member::class); }

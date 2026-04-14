@@ -10,15 +10,15 @@ class MemberObserver
     /**
      * Handle the User "created" event.
      */
-    public function created(User $user): void
-    {
-         Member::create([
-            'user_id'     => $user->id,
-            'member_code' => Member::generateNextMemberCode(),
-            'name'        => $user->name,
-            'is_active'   => 1,
-        ]);
-    }
+    // public function created(User $user): void
+    // {
+    //      Member::create([
+    //         'user_id'     => $user->id,
+    //         'member_code' => Member::generateNextMemberCode(),
+    //         'name'        => $user->name,
+    //         'is_active'   => 1,
+    //     ]);
+    // }
 
     /**
      * Handle the User "updated" event.

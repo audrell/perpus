@@ -17,18 +17,19 @@ class LoanController extends Controller
     {
         if ($request->ajax()) {
             $filter = $request->get('status_filter', 'active');
-
-            // Eager load relasi member supaya tidak berat (N+1 query)
             $query = Loan::with(['member']);
 
-            // Logika Filter
+            // Perbaikan Logika Filter
             if ($filter == 'active') {
+                // Menampilkan yang statusnya masih diproses atau belum dikembalikan
                 $query->whereIn('approval_status', ['PENDING', 'APPROVED']);
             } elseif ($filter == 'returned') {
+                // Menampilkan data yang SUDAH kembali
                 $query->where('approval_status', 'RETURNED');
             } elseif ($filter == 'rejected') {
                 $query->where('approval_status', 'REJECTED');
             }
+            // Jika filter 'all', maka query tidak ditambah 'where' (mengambil semua data)
 
             return DataTables::of($query)
                 ->addIndexColumn()
@@ -36,13 +37,14 @@ class LoanController extends Controller
                     return $row->member ? $row->member->name : '-';
                 })
                 ->addColumn('action', function ($row) {
-                    $btn = '<button class="btn btn-info btn-sm show-btn" data-id="' . $row->id . '"><i class="fas fa-eye"></i></button> ';
+                    $btn = '<button class="btn btn-info btn-sm show-btn" data-id="' . $row->id . '" title="Detail"><i class="fas fa-eye"></i></button> ';
 
                     if ($row->approval_status == 'PENDING') {
-                        $btn .= '<button class="btn btn-success btn-sm approve-btn" data-id="' . $row->id . '"><i class="fas fa-check"></i></button> ';
-                        $btn .= '<button class="btn btn-danger btn-sm reject-btn" data-id="' . $row->id . '"><i class="fas fa-times"></i></button>';
+                        $btn .= '<a href="' . route('book-loans.approve', $row->id) . '" class="btn btn-success btn-sm mr-1"> <i class="fa fa-check"></i> </a>';
+                        $btn .= '<a href="' . route('book-loans.approve', $row->id) . '" class="btn btn-danger btn-sm mr-1"> <i class="fa fa-times"></i> </a>';
                     } elseif ($row->approval_status == 'APPROVED') {
-                        $btn .= '<button class="btn btn-warning btn-sm return-btn" data-id="' . $row->id . '"><i class="fas fa-undo"></i></button>';
+                        // Tombol pengembalian (kuning) hanya muncul jika status APPROVED
+                        $btn .= '<button class="btn btn-warning btn-sm return-btn" data-id="' . $row->id . '" title="Kembalikan Buku"><i class="fas fa-undo"></i></button>';
                     }
 
                     return $btn;
@@ -54,13 +56,30 @@ class LoanController extends Controller
         return view('auth.loans.index');
     }
 
-    public function approve($id)
-    {
-        $loan = Loan::findOrFail($id);
+   public function approve($id)
+{
+    $loan = Loan::with('loanDetails.book')->findOrFail($id);
+
+    DB::beginTransaction();
+    try {
+        // 1. UPDATE STATUS
         $loan->update(['approval_status' => 'APPROVED']);
 
-        return response()->json(['success' => 'Peminjaman berhasil disetujui']);
+        // 2. PERULANGAN KURANGI STOK
+        foreach ($loan->loanDetails as $item) {
+            if ($item->book) {
+                $item->book->decrement('quantity_available');
+            }
+        }
+
+        DB::commit();
+        return redirect()->route('loans.index')->with('success', 'Peminjaman disetujui!');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return redirect()->route('loans.index')->with('error', 'Gagal: ' . $e->getMessage());
     }
+}
 
     public function reject($id)
     {
@@ -115,7 +134,6 @@ class LoanController extends Controller
         try {
             $loan->update([
                 'approval_status' => 'RETURNED', // Tes pakai kata yang sudah pasti ada
-                'returned_at' => now(),
             ]);
 
             foreach ($loan->loanItems as $item) {
@@ -176,7 +194,7 @@ class LoanController extends Controller
                 // Kurangi stok available di tabel books
                 $book = Book::find($bookId);
                 if ($book->quantity_available > 0) {
-                    $book->decrement('quantity_available');
+                    //$book->decrement('quantity_available');
                 } else {
                     throw new \Exception("Stok buku {$book->title} habis!");
                 }

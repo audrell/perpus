@@ -13,13 +13,13 @@ class MemberSeeder extends Seeder
     public function run(): void
     {
         $users = \App\Models\User::all();
-        foreach ($users as $user) {
-            \App\Models\Member::create([
-                'user_id' => $user->id,
-                'member_code' => \App\Models\Member::generateNextMemberCode(),
-                'name' => $user->name,
-                'is_active' => 1,
-            ]);
-        }
+        // foreach ($users as $user) {
+        //     \App\Models\Member::create([
+        //         'user_id' => $user->id,
+        //         'member_code' => \App\Models\Member::generateNextMemberCode(),
+        //         'name' => $user->name,
+        //         'is_active' => 1,
+        //     ]);
+        // }
     }
 }
