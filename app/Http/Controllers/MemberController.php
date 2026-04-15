@@ -12,7 +12,7 @@ class MemberController extends Controller
      */
     public function index()
     {
-        $members =  Member::with('user')->get();
+        $members =  Member::all();
 
         return view('auth.members.index', compact('members'));
     }
@@ -70,7 +70,14 @@ class MemberController extends Controller
         $member = Member::findOrFail($id);
 
         // 1 -> 0, 0 -> 1
-        $member->status = !$member->status;
+
+        if (
+        $member->status == 1) {
+        $member->status = 0;
+        } else {
+        $member->status = 1;
+        }
+
         $member->save();
 
         return redirect()->back()->with('success', 'Status berhasil diubah');

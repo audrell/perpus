@@ -31,9 +31,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/settings/{id}', [App\Http\Controllers\SettingAppController::class, 'update'])->name('settings.update');
     Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])->name('logout');
 
-    //akitf non aktif?? 
+    //akitf non aktif??
     Route::post('/user/update-status/{id}', [App\Http\Controllers\UserController::class, 'updateStatus'])->name('user.updateStatus');
-    Route::put('/members/{id}/status', [App\Http\Controllers\MemberController::class, 'toggleStatus'])->name('members.status');
+    Route::put('/members.status/{id}', [App\Http\Controllers\MemberController::class, 'toggleStatus'])->name('members.status');
 
     Route::get('books/import/template', [App\Http\Controllers\BookController::class, 'downloadImportTemplate'])->name('books.import.template');
     Route::get('/books/export', [App\Http\Controllers\BookController::class, 'export'])->name('books.export');

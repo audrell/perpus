@@ -12,21 +12,10 @@
 
     </div>
 
-    <form action="{{ route('member.status', $member->id) }}" method="POST">
-        @csrf
-        @method('PUT')
-
-        @if($member->status == 1)
-            <button class="btn btn-success">Aktif</button>
-        @else
-            <button class="btn btn-danger">Nonaktif</button>
-        @endif
-    </form>
-
     <div class="card shadow mb-4">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover table-bordered w-100" id="data-member">
+                <table class="table table-hover table-bordered w-100" id="data-members">
                     <thead>
                         <tr class="bg-primary text-white">
                             <th width="5%" class="text-center">No</th>
@@ -34,32 +23,45 @@
                             <th class="text-center">Email</th>
                             <th class="text-center">Phone</th>
                             <th class="text-center">Address</th>
-                            <th class="text-center">Password</th>
                             <th class="text-center">Status</th>
                             <th width="15%" class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($members as $key => $m)
+                        @foreach ($members as $m)
                             <tr>
                                 <td class="text-center">{{ $loop->iteration }}</td>
                                 <td>{{ $m->name }}</td>
-
                                 <td>{{ $m->user->email ?? 'Email tidak ditemukan' }}</td>
-
                                 <td>{{ $m->phone }}</td>
                                 <td>{{ $m->address }}</td>
-
                                 <td class="text-center">
-                                    <small class="text-muted">Encrypted</small>
+                                    @if ($m->status == 1)
+                                        <span class="badge badge-success">Aktif</span>
+                                    @else
+                                        <span class="badge badge-danger">Nonaktif</span>
+                                    @endif
                                 </td>
-
                                 <td class="text-center">
-                                    <div class="btn-group">
+                                    <div class="d-flex justify-content-center gap-1">
                                         <a href="{{ route('members.edit', $m->id) }}"
-                                            class="btn btn-warning btn-sm text-white">
+                                            class="btn btn-warning btn-sm text-white mr-1">
                                             <i class="fas fa-edit"></i>
                                         </a>
+
+                                        <form action="{{ route('members.status', $m->id) }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            @if ($m->status == 1)
+                                                <button type="submit" class="btn btn-secondary btn-sm" title="Nonaktifkan">
+                                                    <i class="fas fa-power-off"></i>
+                                                </button>
+                                            @else
+                                                <button type="submit" class="btn btn-primary btn-sm" title="Aktifkan">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            @endif
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -82,46 +84,10 @@
         $(document).ready(function() {
             // DataTable Initialization
             $('#data-members').DataTable({
-                processing: true,
-                serverSide: true,
+
+                order: [[0, 'asc']]
                 responsive: true,
                 autoWidth: false,
-                ajax: "{{ route('members.index') }}",
-                columns: [{
-                        data: 'nomor',
-                        name: 'nomor',
-                        className: 'text-center'
-                    },
-                    {
-                        data: 'name',
-                        name: 'name'
-                    },
-                    {
-                        data: 'email',
-                        name: 'email'
-                    },
-                    {
-                        data: 'phone',
-                        name: 'phone',
-
-                    },
-                    {
-                        data: 'address',
-                        name: 'address',
-
-                    } {
-                        data: 'password',
-                        name: 'password',
-
-                    },
-                    {
-                        data: 'action',
-                        name: 'action',
-                        orderable: false,
-                        searchable: false,
-                        className: 'text-center'
-                    }
-                ]
             });
 
             // Check All Logic
