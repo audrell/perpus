@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 
 use App\Models\User;
+use App\Models\Member;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -14,6 +15,7 @@ use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -87,7 +89,7 @@ class UserController extends Controller
     protected function getIndexData(): array
     {
         return [
-            'data' => User::with('roles')->latest()->get(),
+            'data'  => User::with('roles')->latest()->get(),
             'roles' => Role::where('name', '!=', 'member')->pluck('name', 'name'),
         ];
     }
@@ -111,22 +113,46 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|same:confirm-password',
-            'roles' => 'required',
+            'name'      => 'required',
+            'email'     => 'required|email|unique:users,email',
+            'password'  => 'required|same:confirm-password',
+            'roles'     => 'required',
+            'phone'     => 'required',
+            'address'   => 'required',
         ]);
 
         $input = $request->all();
         $input['password'] = Hash::make($input['password']);
 
-        $user = User::withoutEvents(function () use ($input) {
-            return User::create($input);
-        });
-        $user->assignRole($request->input('roles'));
+        try {
+                return DB::transaction(function () use ($input, $request) {
 
-        return redirect()->route('users.index')->with('success', 'User created successfully');
-    }
+                    $user = User::create($input);
+                    $user->assignRole($request->input('roles'));
+
+                    \App\Models\Member::create([
+                'user_id'     => $user->id,
+                'name'        => $input['name'],
+                'member_code' => 'MBR-' . date('Ymd') . '-' . strtoupper(Str::random(4)),
+                'phone'       => $request->phone,
+                'address'     => $request->address,
+                'is_active'   => 1,
+            ]);
+
+                return redirect()->route('users.index')
+                ->with('success', 'User dan Data Member berhasil dibuat');
+            });
+
+                } catch (\Exception $e) {
+                    return redirect()->back()
+                            ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                            ->withInput();
+
+                    }
+        }
+
+
+
 
     /**
      * Display the specified resource.
@@ -160,10 +186,10 @@ class UserController extends Controller
     public function update(Request $request, $id): RedirectResponse
     {
         $this->validate($request, [
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'password' => 'same:confirm-password',
-            'roles' => 'nullable',
+            'name'      => 'required',
+            'email'     => 'required|email|unique:users,email,' . $id,
+            'password'  => 'same:confirm-password',
+            'roles'     => 'nullable',
         ]);
 
         $input = $request->all();
@@ -203,5 +229,12 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('users.index')->with('success', 'User deleted successfully');
+    }
+
+    public function updateStatus(Request $request,$id) {
+        $user = User::find($id);
+        $user->status = $request->status;
+        $user->save();
+        return back()->with('success', 'Status berhasil diperbarui!');
     }
 }

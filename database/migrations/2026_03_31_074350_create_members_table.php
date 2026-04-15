@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->string('name');
+            $table->boolean('status')->default(1); //1 -> aktif, 0 -> nonaktif
             $table->string('member_code')->unique(); // Misal: MB-001
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
