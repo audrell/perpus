@@ -36,7 +36,7 @@
                                 <td>{{ $m->phone }}</td>
                                 <td>{{ $m->address }}</td>
                                 <td class="text-center">
-                                    @if ($m->status == 1)
+                                    @if ($m->is_active == 1)
                                         <span class="badge badge-success">Aktif</span>
                                     @else
                                         <span class="badge badge-danger">Nonaktif</span>
@@ -52,7 +52,7 @@
                                         <form action="{{ route('members.status', $m->id) }}" method="POST">
                                             @csrf
                                             @method('PUT')
-                                            @if ($m->status == 1)
+                                            @if ($m->is_active == 1)
                                                 <button type="submit" class="btn btn-secondary btn-sm" title="Nonaktifkan">
                                                     <i class="fas fa-power-off"></i>
                                                 </button>

@@ -16,6 +16,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -89,7 +90,7 @@ class UserController extends Controller
     protected function getIndexData(): array
     {
         return [
-            'data'  => User::with('roles')->latest()->get(),
+            'data' => User::with('roles')->latest()->get(),
             'roles' => Role::where('name', '!=', 'member')->pluck('name', 'name'),
         ];
     }
@@ -113,46 +114,40 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name'      => 'required',
-            'email'     => 'required|email|unique:users,email',
-            'password'  => 'required|same:confirm-password',
-            'roles'     => 'required',
-            'phone'     => 'required',
-            'address'   => 'required',
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|same:confirm-password',
+            'roles' => 'required',
+            'phone' => 'required',
+            'address' => 'required',
         ]);
 
         $input = $request->all();
         $input['password'] = Hash::make($input['password']);
 
         try {
-                return DB::transaction(function () use ($input, $request) {
+            return DB::transaction(function () use ($input, $request) {
+                $user = User::create($input);
+                $user->assignRole($request->input('roles'));
 
-                    $user = User::create($input);
-                    $user->assignRole($request->input('roles'));
+                \App\Models\Member::create([
+                    'user_id' => $user->id,
+                    'name' => $input['name'],
+                    'member_code' => 'MBR-' . date('Ymd') . '-' . strtoupper(Str::random(4)),
+                    'phone' => $request->phone,
+                    'address' => $request->address,
+                    'is_active' => 1,
+                ]);
 
-                    \App\Models\Member::create([
-                'user_id'     => $user->id,
-                'name'        => $input['name'],
-                'member_code' => 'MBR-' . date('Ymd') . '-' . strtoupper(Str::random(4)),
-                'phone'       => $request->phone,
-                'address'     => $request->address,
-                'is_active'   => 1,
-            ]);
-
-                return redirect()->route('users.index')
-                ->with('success', 'User dan Data Member berhasil dibuat');
+                return redirect()->route('users.index')->with('success', 'User dan Data Member berhasil dibuat');
             });
-
-                } catch (\Exception $e) {
-                    return redirect()->back()
-                            ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
-                            ->withInput();
-
-                    }
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                ->withInput();
         }
-
-
-
+    }
 
     /**
      * Display the specified resource.
@@ -184,38 +179,41 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id): RedirectResponse
-    {
-        $this->validate($request, [
-            'name'      => 'required',
-            'email'     => 'required|email|unique:users,email,' . $id,
-            'password'  => 'same:confirm-password',
-            'roles'     => 'nullable',
+{
+    // 1. Validasi input
+    $this->validate($request, [
+        'name'     => 'required',
+        'email'    => 'required|email|unique:users,email,' . $id,
+        'password' => 'same:confirm-password',
+    ]);
+
+    $user = User::find($id);
+
+    // 2. Olah data User (Hanya ambil name dan email untuk tabel users)
+    $input = $request->only(['name', 'email']);
+    if (!empty($request->password)) {
+        $input['password'] = Hash::make($request->password);
+    }
+
+    // Update tabel 'users'
+    $user->update($input);
+
+    // 3. Olah data Member (is_active)
+    if ($user->member) {
+        $user->member->update([
+            // Mengubah 'Aktif' jadi 1, 'Nonaktif' jadi 0 agar sesuai tipe integer di database
+            'is_active' => ($request->status == 'Aktif') ? 1 : 0
         ]);
+    }
 
-        $input = $request->all();
-        if (!empty($input['password'])) {
-            $input['password'] = Hash::make($input['password']);
-        } else {
-            $input = Arr::except($input, ['password']);
-        }
-
-        $user = User::find($id);
-
-        if (!$user->hasRole(['member'])) {
-            $this->validate($request, [
-                'roles' => 'required',
-            ]);
-        } else ($user->hasRole(['member'])); {
-            # code...
-        }
-
-        $user->update($input);
-
+    // 4. Update Roles dengan Proteksi (Agar admin tidak menghapus rolenya sendiri)
+    if ($user->id !== Auth::id()) {
         DB::table('model_has_roles')->where('model_id', $id)->delete();
         $user->assignRole($request->input('roles'));
-
-        return redirect()->route('users.index')->with('success', 'User updated successfully');
     }
+
+    return redirect()->route('users.index')->with('success', 'User updated successfully');
+}
 
     /**
      * Remove the specified resource from storage.
@@ -231,7 +229,8 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User deleted successfully');
     }
 
-    public function updateStatus(Request $request,$id) {
+    public function updateStatus(Request $request, $id)
+    {
         $user = User::find($id);
         $user->status = $request->status;
         $user->save();

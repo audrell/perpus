@@ -12,7 +12,7 @@ class MemberController extends Controller
      */
     public function index()
     {
-        $members =  Member::all();
+        $members = Member::all();
 
         return view('auth.members.index', compact('members'));
     }
@@ -65,17 +65,16 @@ class MemberController extends Controller
         //
     }
 
-    public function toggleStatus($id) {
-
+    public function updateStatus($id)
+    {
         $member = Member::findOrFail($id);
 
         // 1 -> 0, 0 -> 1
 
-        if (
-        $member->status == 1) {
-        $member->status = 0;
+        if ($member->is_active == 1) {
+            $member->is_active = 0;
         } else {
-        $member->status = 1;
+            $member->is_active = 1;
         }
 
         $member->save();

@@ -72,10 +72,14 @@ class AuthController extends Controller
             return back()->withInput($request->only('email'))->with('loginError', 'Password salah.');
         }
 
+        if ($user->member && $user->member->is_active == 0) {
+             abort(403, 'Akun Anda telah dinonaktifkan.');
+    }
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->intended('/home');
         }
+
 
         return back()->withInput($request->only('email'))->with('loginError', 'Login gagal. Silakan coba lagi.');
     }
@@ -105,7 +109,7 @@ class AuthController extends Controller
             'is_active' => true,
         ]);
 
-        $user->syncRoles(['member']);
+        $user->assignRole(['member']);
         Auth::login($user);
         $request->session()->regenerate();
 

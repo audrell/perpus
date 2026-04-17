@@ -38,10 +38,24 @@
                             placeholder="Kosongkan jika tidak ganti">
                     </div>
 
-                    @if (!$user->hasRole(['member']))
+                    <div class="form-group">
+                        <label>Status Member</label>
+                        <select name="status" class="form-control">
+                            <option value="Aktif" {{ (optional($user->member)->is_active == 1) ? 'selected' : '' }}>
+                                Aktif
+                            </option>
+                            <option value="Nonaktif"{{ (optional($user->member)->is_active == 0) ? 'selected' : '' }}>
+                                 Nonaktif
+                            </option>
+                        </select>
+                    </div>
 
+                    <hr class="mt-1">
+
+                    @if (!$user->hasRole(['member']))
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label class="font-weight-bold mb-0">Assign Roles:</label>
+
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input"
                                     id="checkAllEditRoles{{ $user->id }}">
@@ -51,7 +65,7 @@
                                 </label>
                             </div>
                         </div>
-                        <hr class="mt-1">
+
                         <div class="border rounded p-3">
                             <div class="row">
                                 @foreach ($roles as $value => $label)
@@ -73,7 +87,6 @@
                         </div>
                         <small class="text-muted d-block mt-2">*Pilih minimal satu role</small>
                     @endif
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
