@@ -10,76 +10,130 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
+use Spatie\Permission\Traits\HasRoles;
+
 
 class LoanController extends Controller
 {
     public function index(Request $request)
     {
+        $user = Auth::user();
+
         if ($request->ajax()) {
-            $filter = $request->get('status_filter', 'active');
-            $query = Loan::with(['member']);
+            // Ambil data dengan DataTables (AJAX)
+            $query = Loan::with('member')->latest();
 
-            // Perbaikan Logika Filter
-            if ($filter == 'active') {
-                // Menampilkan yang statusnya masih diproses atau belum dikembalikan
-                $query->whereIn('approval_status', ['PENDING', 'APPROVED']);
-            } elseif ($filter == 'returned') {
-                // Menampilkan data yang SUDAH kembali
-                $query->where('approval_status', 'RETURNED');
-            } elseif ($filter == 'rejected') {
-                $query->where('approval_status', 'REJECTED');
+            // Filter berdasarkan role
+            if ($user->hasRole('user')) {
+                // User hanya lihat pinjaman mereka sendiri
+                $query->where('user_id', $user->id);
             }
-            // Jika filter 'all', maka query tidak ditambah 'where' (mengambil semua data)
 
-            return DataTables::of($query)
+            $data = $query->get();
+
+            return DataTables::of($data)
                 ->addIndexColumn()
-                ->addColumn('member_name', function ($row) {
-                    return $row->member ? $row->member->name : '-';
+                // Tambah kolom nomor urut
+                ->addColumn('nomor', function () {
+                    static $counter = 0;
+                    return ++$counter;
                 })
-                ->addColumn('action', function ($row) {
-                    $btn = '<button class="btn btn-info btn-sm show-btn" data-id="' . $row->id . '" title="Detail"><i class="fas fa-eye"></i></button> ';
-
-                    if ($row->approval_status == 'PENDING') {
-                        $btn .= '<a href="' . route('book-loans.approve', $row->id) . '" class="btn btn-success btn-sm mr-1"> <i class="fa fa-check"></i> </a>';
-                        $btn .= '<a href="' . route('book-loans.approve', $row->id) . '" class="btn btn-danger btn-sm mr-1"> <i class="fa fa-times"></i> </a>';
-                    } elseif ($row->approval_status == 'APPROVED') {
-                        // Tombol pengembalian (kuning) hanya muncul jika status APPROVED
-                        $btn .= '<button class="btn btn-warning btn-sm return-btn" data-id="' . $row->id . '" title="Kembalikan Buku"><i class="fas fa-undo"></i></button>';
+                // Tampilkan nama member
+                ->addColumn('member_name', fn(Loan $loan) => $loan->member->name ?? '-')
+                // Format tanggal pinjam
+                ->addColumn('loaned_at', fn(Loan $loan) => $loan->loaned_at->format('d/m/Y'))
+                // Format tenggat
+                ->addColumn('due_date', fn(Loan $loan) => $loan->due_date->format('d/m/Y'))
+                // Status dengan warna badge
+                ->addColumn('status', function (Loan $loan) {
+                    $statusBadge = '';
+                    if ($loan->status === 'BORROWED') {
+                        $isLate = Carbon::today()->gt($loan->due_date);
+                        $statusBadge = $isLate ? '<span class="badge badge-danger">TERLAMBAT</span>' : '<span class="badge badge-warning">DIPINJAM</span>';
+                    } else {
+                        $statusBadge = '<span class="badge badge-success">DIKEMBALIKAN</span>';
                     }
 
-                    return $btn;
+                    // Tambah badge approval status
+                    if ($loan->approval_status === 'PENDING') {
+                        $statusBadge .= '<br><span class="badge badge-warning"
+                        style="font-size:.7rem;margin-top:2px;">PENDING</span>';
+                    } elseif ($loan->approval_status === 'APPROVED') {
+                        $statusBadge .= '<br><span class="badge badge-success"
+                        style="font-size:.7rem;margin-top:2px;">APPROVED</span>';
+                    } elseif ($loan->approval_status === 'REJECTED') {
+                        $statusBadge .= '<br><span class="badge badge-secondary"
+                        style="font-size:.7rem;margin-top:2px;">REJECTED</span>';
+                    }
+
+                    return $statusBadge;
                 })
-                ->rawColumns(['action'])
+                // Total denda
+                ->addColumn('fine_total', fn(Loan $loan) => $loan->status === 'RETURNED' ? 'Rp ' . number_format($loan->fine_total, 0, ',', '.') : '-')
+                // Tombol aksi
+                ->addColumn('action', function (Loan $loan) {
+                    $user = Auth::user();
+                    $btns =
+                        '<a href="' .
+                        route('loans.show', $loan->id) .
+                        '"
+                    class="btn btn-info btn-sm">
+                    <i class="fa fa-eye"></i>
+                </a>';
+
+
+                    // Admin: approve/reject/delete jika PENDING
+                    dd($user->getRoleNames());
+                    if ($user->hasRole('admin') && $loan->approval_status === 'PENDING') {
+                        $btns .=
+                            ' <form action="' .
+                            route('book-loans.approve', $loan->id) .
+                            '"
+                        method="POST" style="display:inline;margin-left:3px;">
+                        <input type="hidden" name="_token" value="' .
+                            csrf_token() .
+                            '">
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="fa fa-check"></i>
+                        </button>
+                    </form>';
+                        // Tombol reject & delete...
+                    }
+
+                    return $btns;
+                })
+                ->rawColumns(['status', 'action'])
                 ->make(true);
         }
 
         return view('auth.loans.index');
     }
 
-   public function approve($id)
-{
-    $loan = Loan::with('loanDetails.book')->findOrFail($id);
+    public function approve($id)
+    {
+        $loan = Loan::with('loanDetails.book')->findOrFail($id);
 
-    DB::beginTransaction();
-    try {
-        // 1. UPDATE STATUS
-        $loan->update(['approval_status' => 'APPROVED']);
+        DB::beginTransaction();
+        try {
+            // 1. UPDATE STATUS
+            $loan->update(['approval_status' => 'APPROVED']);
 
-        // 2. PERULANGAN KURANGI STOK
-        foreach ($loan->loanDetails as $item) {
-            if ($item->book) {
-                $item->book->decrement('quantity_available');
+            // 2. PERULANGAN KURANGI STOK
+            foreach ($loan->loanDetails as $item) {
+                if ($item->book) {
+                    $item->book->decrement('quantity_available');
+                }
             }
+
+            DB::commit();
+            return redirect()->route('loans.index')->with('success', 'Peminjaman disetujui!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()
+                ->route('loans.index')
+                ->with('error', 'Gagal: ' . $e->getMessage());
         }
-
-        DB::commit();
-        return redirect()->route('loans.index')->with('success', 'Peminjaman disetujui!');
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return redirect()->route('loans.index')->with('error', 'Gagal: ' . $e->getMessage());
     }
-}
 
     public function reject($id)
     {
