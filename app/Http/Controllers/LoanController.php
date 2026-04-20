@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\LoanItem;
+use App\Models\SettingApp;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class LoanController extends Controller
@@ -19,12 +22,20 @@ class LoanController extends Controller
     {
         $user = Auth::user();
 
+        // if ($user->hasRole('member')) {
+        //     dd('ini member');
+        //     }
+        //     else {
+        //         dd('admin');
+        //     }
+
+
         if ($request->ajax()) {
             // Ambil data dengan DataTables (AJAX)
             $query = Loan::with('member')->latest();
 
             // Filter berdasarkan role
-            if ($user->hasRole('user')) {
+            if ($user->hasRole('member')) {
                 // User hanya lihat pinjaman mereka sendiri
                 $query->where('user_id', $user->id);
             }
@@ -83,25 +94,36 @@ class LoanController extends Controller
 
 
                     // Admin: approve/reject/delete jika PENDING
-                    dd($user->getRoleNames());
-                    if ($user->hasRole('admin') && $loan->approval_status === 'PENDING') {
-                        $btns .=
-                            ' <form action="' .
-                            route('book-loans.approve', $loan->id) .
-                            '"
-                        method="POST" style="display:inline;margin-left:3px;">
-                        <input type="hidden" name="_token" value="' .
-                            csrf_token() .
-                            '">
-                        <button type="submit" class="btn btn-success btn-sm">
-                            <i class="fa fa-check"></i>
-                        </button>
-                    </form>';
-                        // Tombol reject & delete...
-                    }
+
+                   if ($user->hasRole('admin') && $loan->approval_status === 'PENDING') {
+                 $btns .= '
+                <form action="' . route('book-loans.approve', $loan->id) . '" method="POST" style="display:inline;margin-left:3px;">
+                <input type="hidden" name="_token" value="' . csrf_token() . '">
+                <button type="submit" class="btn btn-success btn-sm">
+                <i class="fa fa-check"></i>
+                </button>
+                </form>';
+
+                 $btns .= '
+                <form action="' . route('book-loans.reject', $loan->id) . '" method="POST" style="display:inline;margin-left:3px;">
+                <input type="hidden" name="_token" value="' . csrf_token() . '">
+                <button type="submit" class="btn btn-danger btn-sm">
+                i class="fa-solid fa-xmark"></i>
+                </button>
+                </form>';
+
+                $btns .= '
+                <form action="' . route('book-loans.return', $loan->id) . '" method="POST" style="display:inline;margin-left:3px;">
+                <input type="hidden" name="_token" value="' . csrf_token() . '">
+                <button type="submit" class="btn btn-warning btn-sm">
+                 <i class="fa-solid fa-arrow-rotate-left"></i>
+                 </button>
+                 </form>';
+}
 
                     return $btns;
                 })
+
                 ->rawColumns(['status', 'action'])
                 ->make(true);
         }
@@ -109,64 +131,154 @@ class LoanController extends Controller
         return view('auth.loans.index');
     }
 
-    public function approve($id)
-    {
-        $loan = Loan::with('loanDetails.book')->findOrFail($id);
+      public function create()
+{
+    $user = Auth::user();
 
-        DB::beginTransaction();
-        try {
-            // 1. UPDATE STATUS
-            $loan->update(['approval_status' => 'APPROVED']);
-
-            // 2. PERULANGAN KURANGI STOK
-            foreach ($loan->loanDetails as $item) {
-                if ($item->book) {
-                    $item->book->decrement('quantity_available');
-                }
-            }
-
-            DB::commit();
-            return redirect()->route('loans.index')->with('success', 'Peminjaman disetujui!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()
-                ->route('loans.index')
-                ->with('error', 'Gagal: ' . $e->getMessage());
-        }
+    // Hanya role 'user' yang bisa buat pinjaman
+    if (!$user->hasRole('user')) {
+        abort(403, 'Hanya role user yang bisa meminjam dari katalog.');
     }
 
-    public function reject($id)
-    {
-        $loan = Loan::with('loanItems.book')->findOrFail($id);
-
-        DB::beginTransaction();
-
-        try {
-            $loan->update([
-                'approval_status' => 'REJECTED',
-            ]);
-
-            foreach ($loan->loanItems as $item) {
-                if ($item->book) {
-                    $item->book->increment('quantity_available');
-                }
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'success' => 'Peminjaman #' . $loan->loan_code . ' telah ditolak dan stok buku dikembalikan.',
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(
-                [
-                    'message' => 'Gagal menolak peminjaman: ' . $e->getMessage(),
-                ],
-                500,
-            );
-        }
+    // Cek member terdaftar & aktif
+    $member = $user->member;
+    if (!$member || !$member->is_active) {
+        return redirect()->route('loans.index')
+            ->with('error', 'Akun member tidak aktif / belum terdaftar.');
     }
+
+    // Ambil buku yang tersedia
+    $books = Book::where('quantity_available', '>', 0)
+        ->orderBy('title')->get();
+
+    // Support pre-select book dari query param
+    $preselectedBookId = (int) request('book_id', 0);
+    if ($preselectedBookId &&
+        !$books->pluck('id')->contains($preselectedBookId)) {
+        $preselectedBookId = null;
+    }
+
+    return view('auth.loans.modals.create', compact('books', 'member', 'preselectedBookId'));
+}
+
+  public function approve(Request $request, Loan $loan)
+{
+    $user = auth()->user();
+
+    // Hanya admin
+    if (!$user || !$user->hasRole('admin')) {
+        abort(403);
+    }
+
+    // Hanya bisa approve jika PENDING
+    if ($loan->approval_status !== 'PENDING') {
+        return back()->with('error', 'Tidak bisa approve. Status tidak PENDING.');
+    }
+
+    // Validasi
+    $request->validate([
+        'approval_note' => 'nullable|string|max:500',
+    ]);
+
+    // Update
+    $loan->update([
+        'approval_status' => 'APPROVED',
+        'approved_by'     => $user->id,
+        'approved_at'     => now(),
+        'approval_note'   => $request->input('approval_note'),
+    ]);
+
+    return back()->with('success', 'Peminjaman disetujui.');
+}
+
+    public function reject(Request $request, Loan $loan)
+{
+    if (!auth()->user()->hasRole('admin')) {
+        abort(403);
+    }
+
+    if ($loan->approval_status !== 'PENDING') {
+        return back()->with('error', 'Status bukan PENDING.');
+    }
+
+    $request->validate([
+        'approval_note' => 'nullable|string|max:500',
+    ]);
+
+    // Update status & return stok buku
+    DB::beginTransaction();
+    try {
+        // Return stok ke buku
+        foreach ($loan->loanItems as $item) {
+            $item->book->increment('quantity_available', $item->qty);
+        }
+
+        // Update loan
+        $loan->update([
+            'approval_status' => 'REJECTED',
+            'approved_by'     => auth()->id(),
+            'approved_at'     => now(),
+            'approval_note'   => $request->input('approval_note'),
+        ]);
+
+        DB::commit();
+        return back()->with('success', 'Peminjaman ditolak. Stok buku dikembalikan.');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', $e->getMessage());
+    }
+}
+
+public function returnLoan(Request $request, Loan $loan)
+{
+    // Cek ownership & approval
+    if ($loan->status !== 'BORROWED' ||
+        $loan->approval_status !== 'APPROVED') {
+        return back()->with('error', 'Tidak bisa return loan ini.');
+    }
+
+    DB::beginTransaction();
+    try {
+        // Hitung denda
+        $setting = SettingApp::first();
+        $finePerDay = $setting?->fine_per_day ?? 5000; // Default 5000/hari
+        $today = Carbon::today();
+
+        $lateDays = 0;
+        if ($today->gt($loan->due_date)) {
+            $lateDays = $today->diffInDays($loan->due_date);
+        }
+
+        $fineTotalAmount = $lateDays > 0 ? $lateDays * $finePerDay : 0;
+
+        // Return stok buku
+        foreach ($loan->loanItems as $item) {
+            $item->book->increment('quantity_available', $item->qty);
+        }
+
+        // Update loan
+        $loan->update([
+            'status'     => 'RETURNED',
+            'returned_at' => $today,
+            'fine_total' => $fineTotalAmount,
+        ]);
+
+        DB::commit();
+
+        $message = "Buku berhasil dikembalikan.";
+        if ($fineTotalAmount > 0) {
+            $message .= " Denda: Rp " .
+                number_format($fineTotalAmount, 0, ',', '.');
+        }
+
+        return back()->with('success', $message);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', $e->getMessage());
+    }
+}
 
     public function show($id)
     {
@@ -212,67 +324,126 @@ class LoanController extends Controller
         }
     }
 
-    public function store(Request $request)
-    {
-        // 1. Validasi Input
-        $request->validate([
-            'member_id' => 'required|exists:members,id',
-            'book_ids' => 'required|array', // Harus pilih minimal 1 buku
+   public function store(Request $request)
+{
+    $user = Auth::user();
+    if (!$user->hasRole('user')) {
+        abort(403, 'Hanya role user yang bisa membuat peminjaman.');
+    }
+
+    // Validasi input
+    $request->validate([
+        'due_date'        => 'required|date|after_or_equal:today',
+        'books'           => 'required|array|min:1',
+        'books.*.book_id' => 'required|exists:books,id',
+        'books.*.qty'     => 'required|integer|min:1',
+    ]);
+
+    $member = $user->member;
+    if (!$member) {
+        return back()->withInput()
+            ->withErrors(['books' => 'Data member tidak ditemukan.']);
+    }
+
+    // Mulai transaction
+    DB::beginTransaction();
+
+    try {
+        // Create Loan
+        $loan = Loan::create([
+            'loan_code'       => Loan::generateLoanCode(),
+            'member_id'       => $member->id,
+            'user_id'         => $user->id,
+            'loaned_at'       => Carbon::today(),
+            'due_date'        => $request->due_date,
+            'status'          => 'BORROWED',
+            'approval_status' => 'PENDING',  // Menunggu approval admin
         ]);
 
-        // 2. Mulai Transaksi Database
-        DB::beginTransaction();
+        // Kurangi stok buku & create loan items
+        foreach ($request->books as $bookData) {
+            $book = Book::lockForUpdate()->find($bookData['book_id']);
 
-        $generatedCode = Loan::generateLoanCode();
-
-        try {
-            // 3. Simpan ke Tabel Loans (Header)
-            $loan = Loan::create([
-                'loan_code' => $generatedCode, // otomatis jadi LN-0001-dst
-                'member_id' => $request->member_id,
-                'user_id' => Auth::id(), // mmengambil ID user yang lagi login
-                'loaned_at' => now(),
-                'due_date' => now()->addDays(7), // contoh: pinjam 7 hari
-                'status' => 'BORROWED',
-                'approval_status' => 'PENDING',
-            ]);
-
-            // 4. Simpan ke Tabel LoanDetails & Update Stok Buku
-            foreach ($request->book_ids as $bookId) {
-                // Simpan detail
-                LoanDetail::create([
-                    'loan_id' => $loan->id,
-                    'book_id' => $bookId,
-                ]);
-
-                // Kurangi stok available di tabel books
-                $book = Book::find($bookId);
-                if ($book->quantity_available > 0) {
-                    //$book->decrement('quantity_available');
-                } else {
-                    throw new \Exception("Stok buku {$book->title} habis!");
-                }
+            // Validasi stok
+            if ($book->quantity_available < $bookData['qty']) {
+                throw new \Exception(
+                    "Stok {$book->title} tidak cukup"
+                );
             }
 
-            DB::commit();
+            // Kurangi stok
+            $book->decrement('quantity_available', $bookData['qty']);
 
-            return redirect()
-                ->back()
-                ->with('success', 'Peminjaman berhasil dibuat: ' . $generatedCode);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()
-                ->back()
-                ->with('error', 'Gagal: ' . $e->getMessage());
+            // Create loan item
+            LoanItem::create([
+                'loan_id' => $loan->id,
+                'book_id' => $bookData['book_id'],
+                'qty'     => $bookData['qty'],
+            ]);
         }
+
+        DB::commit();
+
+        return redirect()->route('loans.show', $loan->id)
+            ->with('success',
+                'Peminjaman berhasil dibuat. Menunggu persetujuan admin.');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withInput()
+            ->withErrors(['books' => $e->getMessage()]);
+    }
+}
+
+    public function exportPdf(Request $request)
+{
+    $authUser = Auth::user();
+
+    $query = Loan::with('member')->latest();
+
+    // User hanya bisa export data miliknya
+    if ($authUser->hasRole('user')) {
+        $query->where('user_id', $authUser->id);
     }
 
-    public function create()
-    {
-        $members = \App\Models\Member::all();
-        // Hanya ambil buku yang stoknya masih ada
-        $books = \App\Models\Book::where('quantity_available', '>', 0)->get();
-
-        return view('auth.loans.modals.create', compact('members', 'books'));
+    // Optional filter status
+    $filterStatus = strtoupper($request->input('status', ''));
+    if (in_array($filterStatus, ['BORROWED', 'RETURNED'])) {
+        $query->where('status', $filterStatus);
+    } else {
+        $filterStatus = null;
     }
+
+    // Optional filter approval status
+    $filterApprovalStatus = strtoupper($request->input('approval_status', ''));
+    if (in_array($filterApprovalStatus, ['PENDING', 'APPROVED', 'REJECTED'])) {
+        $query->where('approval_status', $filterApprovalStatus);
+    } else {
+        $filterApprovalStatus = null;
+    }
+
+    // Optional filter tanggal
+    $startDate = $request->input('start_date');
+    $endDate   = $request->input('end_date');
+
+    if (!empty($startDate)) {
+        $query->whereDate('loaned_at', '>=', $startDate);
+    }
+    if (!empty($endDate)) {
+        $query->whereDate('loaned_at', '<=', $endDate);
+    }
+
+    $loans   = $query->get();
+    $setting = SettingApp::first();
+
+    // Generate PDF
+    $pdf = Pdf::loadView('loans.pdf', compact(
+        'loans', 'setting', 'filterStatus',
+        'filterApprovalStatus', 'startDate', 'endDate'
+    ))->setPaper('a4', 'landscape');
+
+    $filename = 'loans_' . now()->format('Ymd_His') . '.pdf';
+
+    return $pdf->download($filename);
+}
 }

@@ -41,10 +41,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/loans/create', [App\Http\Controllers\LoanController::class, 'create'])->name('loans.create');
     Route::post('/loans', [App\Http\Controllers\LoanController::class, 'store'])->name('loans.store');
     Route::get('/loans', [App\Http\Controllers\LoanController::class, 'index'])->name('loans.index');
-    Route::get('/loans/approve/{id}', [App\Http\Controllers\LoanController::class, 'approve'])->name('book-loans.approve');
     Route::post('/loans/reject/{id}', [\App\Http\Controllers\LoanController::class, 'reject'])->name('book-loans.reject');
     Route::get('/loans/show/{id}', [\App\Http\Controllers\LoanController::class, 'show'])->name('loans.show');
     Route::post('/loans/return/{id}', [\App\Http\Controllers\LoanController::class, 'returnBook'])->name('book-loans.return');
+    Route::post('loans/{loan}/approve', [App\Http\Controllers\LoanController::class, 'approve'])->name('book-loans.approve');
+    Route::get('loans/export/pdf', [App\Http\Controllers\LoanController::class, 'exportPdf'])->name('loans.export.pdf');
 
     //route resource
     Route::resource('permissions', App\Http\Controllers\PermissionsController::class);
@@ -53,4 +54,13 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('categories', App\Http\Controllers\CategoryController::class);
     Route::resource('books', App\Http\Controllers\BookController::class);
     Route::resource('members',App\Http\Controllers\MemberController::class);
+    Route::resource('loans', App\Http\Controllers\LoanController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+
+    // EXTENSION
+    Route::get('loan-extensions', [App\Http\Controllers\LoanExtensionController::class, 'index'])->name('loan-extensions.index');
+    Route::get('loan-extensions/create/{loan}', [App\Http\Controllers\LoanExtensionController::class, 'create'])->name('loan-extensions.create');
+    Route::post('loan-extensions/{loan}', [App\Http\Controllers\LoanExtensionController::class, 'store'])->name('loan-extensions.store');
+    Route::get('loan-extensions/admin', [App\Http\Controllers\LoanExtensionController::class, 'adminIndex'])->name('loan-extensions.admin-index');
+    Route::post('loan-extensions/{extension}/approve', [App\Http\Controllers\LoanExtensionController::class, 'approve'])->name('loan-extensions.approve');
+    Route::post('loan-extensions/{extension}/reject', [App\Http\Controllers\LoanExtensionController::class, 'reject'])->name('loan-extensions.reject');
 });

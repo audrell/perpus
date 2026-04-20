@@ -92,15 +92,44 @@
 
 
     @can('loans.index')
-        <div class="sidebar-heading">Operations</div>
-        <li class="nav-item {{ request()->is('loans*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('loans.index') }}">
-                <i class="fas fa-fw fa-handshake"></i>
-                <span>Loans</span>
-            </a>
-        </li>
-        <hr class="sidebar-divider">
-    @endcan
+    <li class="nav-item {{ request()->is('loans*') || request()->is('loan-extensions*') ? 'active' : '' }}">
+        <a class="nav-link {{ request()->is('loans*') || request()->is('loan-extensions*') ? '' : 'collapsed' }}"
+            href="#" data-toggle="collapse" data-target="#collapseLoans"
+            aria-expanded="true" aria-controls="collapseLoans">
+            <i class="fas fa-fw fa-exchange-alt"></i>
+            <span>Loans</span>
+        </a>
+
+        <div id="collapseLoans"
+            class="collapse {{ request()->is('loans*') || request()->is('loan-extensions*') ? 'show' : '' }}"
+            aria-labelledby="headingLoans" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+
+                {{-- User & Admin bisa lihat --}}
+                <a class="collapse-item {{ request()->is('loans') ? 'active' : '' }}"
+                    href="{{ route('loans.index') }}">
+                    Data Peminjaman
+                </a>
+
+                {{-- Admin only --}}
+                @can('loan-extensions.admin-index')
+                    <a class="collapse-item {{ request()->is('loan-extensions/admin') ? 'active' : '' }}"
+                        href="{{ route('loan-extensions.admin-index') }}">
+                        Permohonan Perpanjangan
+                    </a>
+                @endcan
+
+                {{-- User permohonan mereka --}}
+                @can('loan-extensions.index')
+                    <a class="collapse-item {{ request()->is('loan-extensions') && !request()->is('loan-extensions/admin') ? 'active' : '' }}"
+                        href="{{ route('loan-extensions.index') }}">
+                        Perpanjangan Saya
+                    </a>
+                @endcan
+            </div>
+        </div>
+    </li>
+@endcan
 
 
     @can('settings.index')
