@@ -31,6 +31,10 @@ class Loan extends Model
     {
         return $this->hasMany(LoanDetail::class);
     }
+    public function extensions()
+    {
+        return $this->hasMany(LoanExtension::class, 'loan_id');
+    }
 
     // buat Kode LN-0001
     public static function generateLoanCode(): string

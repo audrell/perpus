@@ -9,18 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+
     public function up(): void
-    {
-        Schema::create('loan_items', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps('loan_id')
-                ->constrained('loans')->cascadeOnDelete();
-            $table->foreign('book_id')
-                ->constrained('books')->cascadeOnDelete();
-            $table->ineteger('qty')->default(1);
-            $table->timestamps();
-        });
-    }
+{
+    Schema::create('loan_items', function (Blueprint $table) {
+        $table->id();
+
+        $table->foreignId('loan_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('book_id')->constrained()->cascadeOnDelete();
+
+        $table->integer('qty')->default(1);
+
+        $table->timestamps();
+    });
+}
 
     /**
      * Reverse the migrations.

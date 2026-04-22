@@ -128,7 +128,7 @@ class LoanController extends Controller
                 ->make(true);
         }
 
-        return view('auth.loans.index');
+        return view('loans.index');
     }
 
       public function create()
@@ -158,7 +158,7 @@ class LoanController extends Controller
         $preselectedBookId = null;
     }
 
-    return view('auth.loans.modals.create', compact('books', 'member', 'preselectedBookId'));
+    return view('loans.modals.create', compact('books', 'member', 'preselectedBookId'));
 }
 
   public function approve(Request $request, Loan $loan)
@@ -284,7 +284,7 @@ public function returnLoan(Request $request, Loan $loan)
     {
         $loan = Loan::with(['member', 'loanItems.book'])->findOrFail($id);
 
-        return view('auth.loans.modals.show', compact('loan'))->render();
+        return view('loans.modals.show', compact('loan'))->render();
     }
 
     public function returnBook($id)

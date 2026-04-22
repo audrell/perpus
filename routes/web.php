@@ -57,7 +57,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('loans', App\Http\Controllers\LoanController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
 
     // EXTENSION
-    Route::get('loan-extensions', [App\Http\Controllers\LoanExtensionController::class, 'index'])->name('loan-extensions.index');
+    Route::get('loan-extensions', [App\Http\Controllers\LoanExtensionController::class, 'adminIndex'])->name('loan-extensions.admin-index');
     Route::get('loan-extensions/create/{loan}', [App\Http\Controllers\LoanExtensionController::class, 'create'])->name('loan-extensions.create');
     Route::post('loan-extensions/{loan}', [App\Http\Controllers\LoanExtensionController::class, 'store'])->name('loan-extensions.store');
     Route::get('loan-extensions/admin', [App\Http\Controllers\LoanExtensionController::class, 'adminIndex'])->name('loan-extensions.admin-index');

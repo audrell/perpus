@@ -60,7 +60,7 @@ class CategoryController extends Controller
         }
 
         $categories = Category::all();
-        return view('auth.management.categories.index', compact('categories'));
+        return view('management.categories.index', compact('categories'));
     }
 
     public function store(Request $request): RedirectResponse

@@ -3,9 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Loan;
+use App\Models\LoanExtension;
+use App\Models\SettingApp;
+
+
 
 class LoanExtensionController extends Controller
 {
+    public function index()
+{
+    return $this->adminIndex();
+}
+
     public function create($loanId)
 {
     $loan = Loan::with('loanItems.book')->findOrFail($loanId);

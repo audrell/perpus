@@ -14,7 +14,7 @@ class MemberController extends Controller
     {
         $members = Member::all();
 
-        return view('auth.members.index', compact('members'));
+        return view('members.index', compact('members'));
     }
 
     /**

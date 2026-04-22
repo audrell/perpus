@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::create('loans', function (Blueprint $table) {
         $table->id();
         $table->string('loan_code')->unique(); // LN-20240501-001
-        $table->foreignId('member_id')->constrained('members');
+        $table->foreignId('member_id')->constrained('members'); 
         $table->foreignId('user_id')->constrained('users'); // Petugas/Pemilik Transaksi
         $table->foreignId('approved_by')->nullable()->constrained('users'); // Admin yang approve
         $table->date('loaned_at'); // Tanggal pinjam

@@ -74,7 +74,7 @@ class BookController extends Controller
         $categories = Category::all();
 
         $categories = Category::all();
-        return view('auth.management.books.index', compact('books', 'categories'));
+        return view('management.books.index', compact('books', 'categories'));
     }
 
     public function destroy($id)
