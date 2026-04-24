@@ -78,7 +78,7 @@
         </div>
     @endif
 
-    @include('auth.management.books.modals.create')
+    @include('management.books.modals.create')
 
     <div class="card shadow mb-4">
         <div class="card-body">
@@ -107,8 +107,8 @@
         </div>
     </div>
     @foreach ($books as $book)
-        @include('auth.management.books.modals.show', ['book' => $book])
-        @include('auth.management.books.modals.edit', [
+        @include('management.books.modals.show', ['book' => $book])
+        @include('management.books.modals.edit', [
             'book' => $book,
             'categories' => $categories,
         ])

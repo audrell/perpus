@@ -120,12 +120,12 @@
                 @endcan
 
                 {{-- User permohonan mereka --}}
-                @can('loan-extensions.index')
-                    <a class="collapse-item {{ request()->is('loan-extensions') && !request()->is('loan-extensions/admin') ? 'active' : '' }}"
-                        href="{{ route('loan-extensions.admin-index') }}">
+                {{-- @can('loan-extensions.index')
+                    <a class="collapse-item {{ request()->is('loan-extensions') && !request()->is('loan-extensions.user-index') ? 'active' : '' }}"
+                        href="{{ route('loan-extensions.user-index') }}">
                         Perpanjangan Saya
                     </a>
-                @endcan
+                @endcan --}}
             </div>
         </div>
     </li>

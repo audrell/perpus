@@ -58,27 +58,24 @@ class LoanController extends Controller
                 // Status dengan warna badge
                 ->addColumn('status', function (Loan $loan) {
                     $statusBadge = '';
-                    if ($loan->status === 'BORROWED') {
-                        $isLate = Carbon::today()->gt($loan->due_date);
-                        $statusBadge = $isLate ? '<span class="badge badge-danger">TERLAMBAT</span>' : '<span class="badge badge-warning">DIPINJAM</span>';
-                    } else {
-                        $statusBadge = '<span class="badge badge-success">DIKEMBALIKAN</span>';
-                    }
+                  if ($loan->status === 'BORROWED') {
+                      $isLate = Carbon::today()->gt($loan->due_date);
+                      $statusBadge = $isLate ? '<span class="badge badge-danger">TERLAMBAT</span>' : '<span class="badge badge-warning">DIPINJAM</span>';
+                     } else {
+                       $statusBadge = '<span class="badge badge-success">DIKEMBALIKAN</span>';
+                     }
 
                     // Tambah badge approval status
-                    if ($loan->approval_status === 'PENDING') {
-                        $statusBadge .= '<br><span class="badge badge-warning"
-                        style="font-size:.7rem;margin-top:2px;">PENDING</span>';
-                    } elseif ($loan->approval_status === 'APPROVED') {
-                        $statusBadge .= '<br><span class="badge badge-success"
-                        style="font-size:.7rem;margin-top:2px;">APPROVED</span>';
-                    } elseif ($loan->approval_status === 'REJECTED') {
-                        $statusBadge .= '<br><span class="badge badge-secondary"
-                        style="font-size:.7rem;margin-top:2px;">REJECTED</span>';
-                    }
+                    if ($loan->status !== 'RETURNED') {
+                         if ($loan->approval_status === 'PENDING') {
+                             $statusBadge .= '<br><span class="badge badge-info">PENDING</span>';
+                        } elseif ($loan->approval_status === 'REJECTED') {
+                            $statusBadge = '<span class="badge badge-secondary">DITOLAK</span>';
+                        }
+                      }
 
                     return $statusBadge;
-                })
+                    })
                 // Total denda
                 ->addColumn('fine_total', fn(Loan $loan) => $loan->status === 'RETURNED' ? 'Rp ' . number_format($loan->fine_total, 0, ',', '.') : '-')
                 // Tombol aksi
@@ -108,7 +105,7 @@ class LoanController extends Controller
                 <form action="' . route('book-loans.reject', $loan->id) . '" method="POST" style="display:inline;margin-left:3px;">
                 <input type="hidden" name="_token" value="' . csrf_token() . '">
                 <button type="submit" class="btn btn-danger btn-sm">
-                i class="fa-solid fa-xmark"></i>
+                <i class="fa-regular fa-circle-xmark"></i>
                 </button>
                 </form>';
 
@@ -116,9 +113,9 @@ class LoanController extends Controller
                 <form action="' . route('book-loans.return', $loan->id) . '" method="POST" style="display:inline;margin-left:3px;">
                 <input type="hidden" name="_token" value="' . csrf_token() . '">
                 <button type="submit" class="btn btn-warning btn-sm">
-                 <i class="fa-solid fa-arrow-rotate-left"></i>
-                 </button>
-                 </form>';
+                <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+                </form>';
 }
 
                     return $btns;
@@ -136,7 +133,7 @@ class LoanController extends Controller
     $user = Auth::user();
 
     // Hanya role 'user' yang bisa buat pinjaman
-    if (!$user->hasRole('user')) {
+    if (!$user->hasRole('member')) {
         abort(403, 'Hanya role user yang bisa meminjam dari katalog.');
     }
 
@@ -176,19 +173,44 @@ class LoanController extends Controller
     }
 
     // Validasi
-    $request->validate([
-        'approval_note' => 'nullable|string|max:500',
-    ]);
+    // $request->validate([
+    //     'approval_note' => 'nullable|string|max:500',
+    // ]);
 
-    // Update
-    $loan->update([
-        'approval_status' => 'APPROVED',
-        'approved_by'     => $user->id,
-        'approved_at'     => now(),
-        'approval_note'   => $request->input('approval_note'),
-    ]);
+    // // Update
+    // $loan->update([
+    //     'approval_status' => 'APPROVED',
+    //     'approved_by'     => $user->id,
+    //     'approved_at'     => now(),
+    //     'approval_note'   => $request->input('approval_note'),
+    // ]);
 
+    // return back()->with('success', 'Peminjaman disetujui.');
+
+    // Update status & return stok buku
+
+    DB::beginTransaction();
+    try {
+        // Return stok ke buku
+        foreach ($loan->loanItems as $item) {
+            $item->book->decrement('quantity_available', $item->qty);
+        }
+
+        // Update loan
+        $loan->update([
+            'approval_status' => 'APPROVED',
+            'approved_by'     => auth()->id(),
+            'approved_at'     => now(),
+            'approval_note'   => $request->input('approval_note'),
+        ]);
+
+        DB::commit();
     return back()->with('success', 'Peminjaman disetujui.');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', $e->getMessage());
+    }
 }
 
     public function reject(Request $request, Loan $loan)
@@ -215,6 +237,7 @@ class LoanController extends Controller
 
         // Update loan
         $loan->update([
+            'status'          => 'REJECTED',
             'approval_status' => 'REJECTED',
             'approved_by'     => auth()->id(),
             'approved_at'     => now(),
@@ -292,30 +315,31 @@ public function returnLoan(Request $request, Loan $loan)
         $loan = Loan::with('loanItems.book')->findOrFail($id);
 
         if ($loan->approval_status !== 'APPROVED') {
-            return response()->json(['message' => 'Hanya buku APPROVED yang bisa dikembalikan'], 400);
+            return redirect()->back()->with(['message' => 'Hanya buku APPROVED yang bisa dikembalikan'], 400);
         }
 
         DB::beginTransaction();
 
         try {
             $loan->update([
-                'approval_status' => 'RETURNED', // Tes pakai kata yang sudah pasti ada
+                'staus'           => 'DIKEMBALIKAN',
+                'approval_status' => 'RETURNED',
+                'returned_at'     => now(),
             ]);
 
             foreach ($loan->loanItems as $item) {
                 if ($item->book) {
-                    $item->book->increment('quantity_available');
+                    $item->book->increment('quantity_available', $item->qty);
                 }
             }
 
             DB::commit();
 
-            return response()->json([
-                'success' => 'Buku berhasil dikembalikan dan stok diperbarui!',
-            ]);
+            return redirect()->route('loans.index')->with('success', 'Buku berhasil dikembalikan dan stok diperbarui!');
+
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(
+            return redirect()->back()->with(
                 [
                     'message' => 'Gagal: ' . $e->getMessage(),
                 ],
@@ -327,7 +351,7 @@ public function returnLoan(Request $request, Loan $loan)
    public function store(Request $request)
 {
     $user = Auth::user();
-    if (!$user->hasRole('user')) {
+    if (!$user->hasRole('member')) {
         abort(403, 'Hanya role user yang bisa membuat peminjaman.');
     }
 
@@ -372,7 +396,7 @@ public function returnLoan(Request $request, Loan $loan)
             }
 
             // Kurangi stok
-            $book->decrement('quantity_available', $bookData['qty']);
+            //$book->decrement('quantity_available', $bookData['qty']);
 
             // Create loan item
             LoanItem::create([
@@ -402,7 +426,7 @@ public function returnLoan(Request $request, Loan $loan)
     $query = Loan::with('member')->latest();
 
     // User hanya bisa export data miliknya
-    if ($authUser->hasRole('user')) {
+    if ($authUser->hasRole('member')) {
         $query->where('user_id', $authUser->id);
     }
 

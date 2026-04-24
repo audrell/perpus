@@ -177,7 +177,7 @@
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 @if ($item->book->cover_path)
-                                                    <img src="{{ asset('uploads/covers/' . $item->book->cover_path) }}"
+                                                    <img src="{{ asset('storage/' . $item->book->cover_path) }}"
                                                         alt="cover" style="width:36px;height:48px;object-fit:cover;margin-right:8px;">
                                                 @endif
                                                 {{ $item->book->title }}

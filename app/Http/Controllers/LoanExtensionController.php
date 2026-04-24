@@ -36,7 +36,7 @@ class LoanExtensionController extends Controller
     $setting = SettingApp::first();
     $extensionDays = $setting?->extension_days ?? 7;
 
-    return view('loan-extensions.create', compact('loan', 'extensionDays'));
+    return view('loan-extensions.modals.create', compact('loan', 'extensionDays'));
 }
 
 public function store(Request $request, $loanId)
@@ -92,7 +92,7 @@ public function adminIndex()
         ->take(5)
         ->get();
 
-    return view('loan-extensions.admin-index',
+    return view('loan-extenfsions.admin-index',
         compact('extensions', 'approved'));
 }
 

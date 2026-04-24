@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Loan extends Model
 {
-    protected $fillable = ['loan_code', 'member_id', 'user_id', 'loaned_id', 'due_date', 'returned_at', 'status', 'fine_total', 'approval_status', 'approved_by', 'approved_at', 'approval_note'];
+    protected $fillable = ['loan_code', 'member_id', 'user_id', 'loaned_at', 'due_date', 'returned_at', 'status', 'fine_total', 'approval_status', 'approved_by', 'approved_at', 'approval_note'];
 
     protected $casts = [
         'loaned_at' => 'date',
@@ -29,7 +29,7 @@ class Loan extends Model
     }
     public function loanItems()
     {
-        return $this->hasMany(LoanDetail::class);
+        return $this->hasMany(Loanitem::class, 'loan_id');
     }
     public function extensions()
     {

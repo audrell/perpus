@@ -43,7 +43,7 @@
         </div>
     @endif
 
-    @include('auth.management.categories.modals.create')
+    @include('management.categories.modals.create')
 
     <div class="card">
         <div class="card-body">

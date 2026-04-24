@@ -33,7 +33,7 @@
                     <i class="fas fa-file-pdf mr-1"></i> Export PDF
                 </a>
 
-                @if (auth()->user()->hasRole('user'))
+                @if (auth()->user()->hasRole('member'))
                     <a href="{{ route('loans.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus mr-1"></i> Buat Peminjaman Baru
                     </a>
