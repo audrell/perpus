@@ -40,10 +40,22 @@
                                     @endif
                                 </div>
                                 <div class="small mb-1">
-                                    <strong>Tenggat:</strong> {{ $ext->loan->due_date->format('d M Y') }}
-                                    <i class="fas fa-arrow-right mx-2"></i>
+                                    {{-- <strong>Tenggat:</strong> {{ $ext->loan->due_date->format('d M Y') }} --}}
+                                    {{-- <i class="fas fa-arrow-right mx-2"></i>
                                     {{ $ext->new_due_date->format('d M Y') }}
-                                    (+{{ $ext->extension_days }} hari)
+                                    (+{{ $ext->extension_days }} hari) --}}
+
+                                    @php
+                                        $originalDate = \Carbon\Carbon::parse($ext->new_due_date)->copy()->subDays($ext->extension_days);
+                                    @endphp
+
+                                    {{$originalDate->format('d M Y')}}
+
+                                    <i class="fa fa-arrow-right mx-2"></i>
+
+                                    {{ \Carbon\Carbon::parse($ext->new_due_date)->format('d M Y') }}
+
+                                   <span class="text-success ml-1">(+{{ $ext->extension_days }} hari)</span>
                                 </div>
                                 <div class="small mb-1">
                                     <strong>Alasan:</strong> {{ $ext->reason }}
@@ -69,7 +81,7 @@
                 </div>
             @empty
                 <div class="text-center text-muted py-5">
-                    <i class="fas fa-inbox fa-3x mb-3 d-block text-secondary"></i>
+                    <i class="fas fa-inbox fa-3x mb-3 mx-auto d-block text-secondary"></i>
                     Belum ada permohonan.
                 </div>
             @endforelse

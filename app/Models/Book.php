@@ -30,7 +30,12 @@ class Book extends Model
         static::creating(function ($book) {
             $book->slug = \Illuminate\Support\Str::slug($book->title);
         });
+
+        static::saving(function ($book) {
+        $book->slug = \Illuminate\Support\Str::slug($book->title);
+    });
     }
+
 
     // mempelajari relasi ke kategori (satu buku punya satu kategori)
     public function category()

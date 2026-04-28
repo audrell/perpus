@@ -91,9 +91,6 @@ class BookController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->all();
-        $data['quantity_available'] = $request->quantity_total;
-
         $request->validate([
             'title' => 'required|string|max:255',
             'isbn' => 'required|string|unique:books,isbn',
@@ -101,14 +98,20 @@ class BookController extends Controller
             'publisher' => 'required|string',
             'year' => 'required|integer',
             'category_id' => 'required|exists:categories,id',
-            'rack_location' => 'nullable|string',
+            'rack_location' => 'required|string',
             'quantity_total' => 'required|integer|min:0',
             'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+        
+       DB::beginTransaction();
+        try {
+
+        $data = $request->all();
+        $data['quantity_available'] = $request->quantity_total;
 
         $coverPath = null;
         if ($request->hasFile('cover')) {
-            $coverPath = $request->file('cover')->store('covers', 'public');
+            $coverPath = $request->file('cover')->store('books', 'public');
         }
 
         Book::create([
@@ -123,40 +126,49 @@ class BookController extends Controller
             'quantity_available' => $request->quantity_total,
             'cover_path' => $coverPath,
         ]);
-
+        
+        // ISI LOGIC
+        DB::commit();
         return redirect()->route('books.index')->with('success', 'Buku baru berhasil ditambahkan!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function update(Request $request, Book $book)
     {
+        //dd($request->all());
+
         $request->validate([
             'title' => 'required|string|max:255',
-            'isbn' => 'required|string|unique:books,isbn,' . $book->id,
             'category_id' => 'required|exists:categories,id',
             'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->only(['title', 'isbn', 'author', 'publisher', 'year', 'category_id', 'rack_location', 'quantity_total']);
+        DB::beginTransaction();
+        try {
+
+        $data = $request->only(['title', 'cover', 'category_id']);
 
         if ($request->hasFile('cover')) {
-            // hapus foto lama dari storage agar tidak menumpuk
-              if ($book->cover_path) {
-                Storage::disk('public')->delete($book->cover_path);
+            if ($book->cover_path && \Storage::disk('public')->exists($book->cover_path)) {
+                \Storage::disk('public')->delete($book->cover_path);
             }
-
-            // upload foto baru
-            $data['cover_path'] = $request->file('cover')->store('covers', 'public');
-             dd($data['cover_path']);
+            $data['cover_path'] = $request->file('cover')->store('books', 'public');
         }
 
-        // hitung ulang quantity_available jika quantity_total berubah
-        // (ini logika sederhana, bisa disesuaikan)
-        $selisih = $request->quantity_total - $book->quantity_total;
-        $data['quantity_available'] = $book->quantity_available + $selisih;
+        $data['quantity_available'] = $book->quantity_available + ($request->quantity_total - $book->quantity_total);
 
         $book->update($data);
+        DB::commit();
+        return redirect()->route('books.index')->with('success', 'Buku berhasil diperbarui!');
 
-        return redirect()->route('books.index')->with('success', 'buku berhasil diperbarui!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function downloadImportTemplate()

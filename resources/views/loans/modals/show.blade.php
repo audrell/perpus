@@ -216,16 +216,22 @@
                     </thead>
                     <tbody>
                         @foreach ($loan->extensions->sortByDesc('created_at') as $ext)
+                            @php
+                                $originalDueDate = \Carbon\Carbon::parse($ext->new_due_date)->copy()->subDays((int) $ext->extension_days);
+                            @endphp
+
                             <tr>
                                 <td class="small" title="{{ $ext->created_at->format('d M Y H:i') }}">
                                     {{ $ext->created_at->diffForHumans() }}
                                 </td>
                                 <td class="small">
-                                    {{ \Carbon\Carbon::parse($ext->loan->due_date)->subDays((int) $ext->extension_days)->format('d M Y') }}
+                                    {{ $originalDueDate->format('d M Y') }}
                                 </td>
-                                <td class="small"><strong>{{ $ext->new_due_date->format('d M Y') }}</strong></td>
+                                <td class="small">
+                                <strong class="text-primary">{{ $ext->new_due_date->format('d M Y') }}</strong>
+                                </td>
                                 <td class="text-center small">
-                                    <span class="badge badge-light">+{{ $ext->extension_days }}</span>
+                                    <span class="badge badge-light border">+{{ $ext->extension_days }} hari</span>
                                 </td>
                                 <td class="small">
                                     @if ($ext->status === 'PENDING')

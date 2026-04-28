@@ -207,3 +207,24 @@ php artisan serve
 ```
 
 Selesai. Aplikasi siap dijalankan untuk development lokal.
+
+
+
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            // ISI VALIDASI
+        ]);
+
+       DB::beginTransaction();
+        try {
+
+        
+        // ISI LOGIC
+        DB::commit();
+        return redirect()->route('books.index')->with('success', 'Buku berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
+        }
