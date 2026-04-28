@@ -92,8 +92,20 @@ public function adminIndex()
         ->take(5)
         ->get();
 
-    return view('loan-extenfsions.admin-index',
+    return view('loan-extensions.admin-index',
         compact('extensions', 'approved'));
+}
+
+public function userIndex()
+{
+    $extensions = LoanExtension::with(['loan.member'])
+        ->whereHas('loan', function ($q) {
+            $q->where('user_id', auth()->id());
+        })
+        ->latest()
+        ->paginate(15);
+
+    return view('loan-extensions.user-index', compact('extensions'));
 }
 
 public function approve(Request $request, $extensionId)

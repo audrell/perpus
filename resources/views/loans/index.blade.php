@@ -86,63 +86,39 @@
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap4.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#data-loans').DataTable({
+            // ✅ Inisialisasi DataTable dengan data() untuk kirim filter ke server
+            var table = $('#data-loans').DataTable({
                 processing: true,
                 serverSide: true,
                 responsive: true,
                 autoWidth: false,
-                order: [
-                    [0, 'desc']
+                order: [[0, 'desc']],
+                ajax: {
+                    url: "{{ route('loans.index') }}",
+                    data: function(d) {
+                        // ✅ Kirim nilai filter ke controller
+                        d.status        = $('#exportStatus').val();
+                        d.approval_status = $('#exportApprovalStatus').val();
+                        d.start_date    = $('#exportStartDate').val();
+                        d.end_date      = $('#exportEndDate').val();
+                    }
+                },
+                columns: [
+                    { data: 'nomor',       name: 'nomor',       orderable: false, searchable: false, className: 'text-center' },
+                    { data: 'loan_code',   name: 'loan_code',   className: 'text-center font-weight-bold' },
+                    { data: 'member_name', name: 'member_name' },
+                    { data: 'loaned_at',   name: 'loaned_at',   className: 'text-center' },
+                    { data: 'due_date',    name: 'due_date',    className: 'text-center' },
+                    { data: 'status',      name: 'status',      className: 'text-center', orderable: false, searchable: false },
+                    { data: 'fine_total',  name: 'fine_total',  className: 'text-center', orderable: false, searchable: false },
+                    { data: 'action',      name: 'action',      className: 'text-center', orderable: false, searchable: false },
                 ],
-                ajax: "{{ route('loans.index') }}",
-                columns: [{
-                        data: 'nomor',
-                        name: 'nomor',
-                        orderable: false,
-                        searchable: false,
-                        className: 'text-center'
-                    },
-                    {
-                        data: 'loan_code',
-                        name: 'loan_code',
-                        className: 'text-center font-weight-bold'
-                    },
-                    {
-                        data: 'member_name',
-                        name: 'member_name'
-                    },
-                    {
-                        data: 'loaned_at',
-                        name: 'loaned_at',
-                        className: 'text-center'
-                    },
-                    {
-                        data: 'due_date',
-                        name: 'due_date',
-                        className: 'text-center'
-                    },
-                    {
-                        data: 'status',
-                        name: 'status',
-                        className: 'text-center',
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
-                        data: 'fine_total',
-                        name: 'fine_total',
-                        className: 'text-center',
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
-                        data: 'action',
-                        name: 'action',
-                        className: 'text-center',
-                        orderable: false,
-                        searchable: false
-                    },
-                ],
+            });
+
+            // ✅ Reload tabel saat filter berubah
+            $('#exportStatus, #exportApprovalStatus, #exportStartDate, #exportEndDate').on('change', function() {
+                table.ajax.reload();
+                updateExportUrl();
             });
 
             $(document).on('click', '.show_confirm', function(event) {
@@ -158,36 +134,27 @@
                     confirmButtonText: 'Ya, Hapus!',
                     cancelButtonText: 'Batal'
                 }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
+                    if (result.isConfirmed) { form.submit(); }
                 });
             });
         });
 
-        // Update export PDF link when filter changes
+        // Update export PDF link
         const baseUrl = "{{ route('loans.export.pdf') }}";
-        const exportStatus = document.getElementById('exportStatus');
-        const exportApprovalStatus = document.getElementById('exportApprovalStatus');
-        const exportStartDate = document.getElementById('exportStartDate');
-        const exportEndDate = document.getElementById('exportEndDate');
-        const btnExportPdf = document.getElementById('btnExportPdf');
-
         function updateExportUrl() {
             const params = new URLSearchParams();
+            const s  = document.getElementById('exportStatus').value;
+            const as = document.getElementById('exportApprovalStatus').value;
+            const sd = document.getElementById('exportStartDate').value;
+            const ed = document.getElementById('exportEndDate').value;
 
-            if (exportStatus.value) params.append('status', exportStatus.value);
-            if (exportApprovalStatus.value) params.append('approval_status', exportApprovalStatus.value);
-            if (exportStartDate.value) params.append('start_date', exportStartDate.value);
-            if (exportEndDate.value) params.append('end_date', exportEndDate.value);
+            if (s)  params.append('status', s);
+            if (as) params.append('approval_status', as);
+            if (sd) params.append('start_date', sd);
+            if (ed) params.append('end_date', ed);
 
             const query = params.toString();
-            btnExportPdf.href = query ? `${baseUrl}?${query}` : baseUrl;
+            document.getElementById('btnExportPdf').href = query ? `${baseUrl}?${query}` : baseUrl;
         }
-
-        exportStatus.addEventListener('change', updateExportUrl);
-        exportApprovalStatus.addEventListener('change', updateExportUrl);
-        exportStartDate.addEventListener('change', updateExportUrl);
-        exportEndDate.addEventListener('change', updateExportUrl);
     </script>
 @endpush

@@ -20,12 +20,11 @@ class BooksExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSiz
     public function headings(): array
     {
         return [
-            'Category_id',
             'Judul Buku',
             'Penulis',
             'Penerbit',
             'Tahun',
-            'Lokasi Rak',
+            'Lokasi_rak',
             'Kategori',
             'Stok Total',
             'Stok Tersedia',
@@ -37,7 +36,6 @@ class BooksExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSiz
     public function map($book): array
     {
         return [
-            $book->category_id,
             $book->title,
             $book->author,
             $book->publisher,

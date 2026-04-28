@@ -191,7 +191,7 @@
         // SweetAlert Delete Confirmation
         $(document).on('click', '.show_confirm', function(event) {
             event.preventDefault();
-            var form = $(this).closest('form');
+            var id = $(this).data('id'); // ← ambil data-id
             Swal.fire({
                 title: 'Apakah anda yakin?',
                 text: 'Data buku ini akan dihapus permanen!',
@@ -203,7 +203,18 @@
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    form.submit();
+                    $.ajax({
+                        url: '/books/' + id,
+                        type: 'POST',
+                        data: {
+                            _method: 'DELETE',
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function() {
+                            $('#data-books').DataTable().ajax.reload();
+                            Swal.fire('Terhapus!', 'Buku berhasil dihapus.', 'success');
+                        }
+                    });
                 }
             });
         });

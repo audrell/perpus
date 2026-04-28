@@ -24,7 +24,6 @@ class LoanExtension extends Model
         'approved_at'  => 'datetime',
     ];
 
-    // ========== RELATIONSHIPS ==========
 
     public function loan(): BelongsTo
     {
@@ -41,7 +40,6 @@ class LoanExtension extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
-    // ========== BUSINESS LOGIC ==========
 
     /**
      * Validasi apakah peminjaman bisa request perpanjangan
@@ -55,17 +53,14 @@ class LoanExtension extends Model
     {
         $loan = Loan::find($loanId);
 
-        // Cek status
         if (!$loan || $loan->status !== 'BORROWED') {
             return false;
         }
 
-        // Cek deadline kadaluarsa (>3 hari)
         if (\Carbon\Carbon::today()->diffInDays($loan->due_date) < -3) {
             return false;
         }
 
-        // Cek limit perpanjangan
         $approvedCount = self::where('loan_id', $loanId)
             ->where('status', 'APPROVED')
             ->count();

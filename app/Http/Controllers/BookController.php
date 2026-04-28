@@ -27,9 +27,10 @@ class BookController extends Controller
                 ->addIndexColumn()
                 ->addColumn('cover', function ($row) {
                     // Gunakan path lengkap ke folder storage
-                    $url = $row->cover_path ? asset('storage/' . $row->cover_path) : 'https://via.placeholder.com/50x70?text=No+Cover';
+                    $url = $row->cover_path ? asset('storage/' . $row->cover_path) : asset('storage/books/default.jpg');
 
-                    return '<img src="' . $url . '" width="50" class="img-thumbnail" onerror="this.src=\'https://via.placeholder.com/50x70?text=Error\'">';
+                   $default = asset('storage/books/default.jpg');
+                    return '<img src="' . $url . '" width="50" class="img-thumbnail" onerror="this.src=\'' . $default . '\'">';
                 })
 
                 ->rawColumns(['cover', 'action'])
@@ -53,7 +54,7 @@ class BookController extends Controller
 
                 ->addColumn('action', function ($row) {
                     return '
-                    <div class="d-flex justify-content-center">
+
                         <button class="btn btn-sm btn-info mr-1" data-toggle="modal" data-target="#modalShowBook' .
                         $row->id .
                         '">
@@ -68,8 +69,7 @@ class BookController extends Controller
                         $row->id .
                         '">
                             <i class="fas fa-trash"></i>
-                        </button>
-                    </div>';
+                        </button>';
                 })
                 ->rawColumns(['cover', 'action'])
                 ->make(true);
@@ -136,16 +136,17 @@ class BookController extends Controller
             'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-      $data = $request->only(['title', 'isbn', 'author', 'publisher', 'year', 'category_id', 'rack_location', 'quantity_total']);
+        $data = $request->only(['title', 'isbn', 'author', 'publisher', 'year', 'category_id', 'rack_location', 'quantity_total']);
 
         if ($request->hasFile('cover')) {
             // hapus foto lama dari storage agar tidak menumpuk
-            if ($book->cover_path && Storage::disk('public')->exists($book->cover_path)) {
+              if ($book->cover_path) {
                 Storage::disk('public')->delete($book->cover_path);
             }
 
             // upload foto baru
             $data['cover_path'] = $request->file('cover')->store('covers', 'public');
+             dd($data['cover_path']);
         }
 
         // hitung ulang quantity_available jika quantity_total berubah
@@ -182,7 +183,7 @@ class BookController extends Controller
 
         // ========== STEP 2: VALIDASI HEADER ==========
         // Header HARUS cocok dengan template, jika tidak akan error
-        $expectedHeaders = ['category_id', 'isbn', 'title', 'author', 'publisher', 'year', 'rack_location', 'quantity_total', 'quantity_available'];
+        $expectedHeaders = ['judul_buku', 'penulis', 'penerbit', 'tahun', 'lokasi_rak', 'kategori', 'stok_total', 'stok_tersedia', 'isbn'];
 
         // Baca header dari file Excel (baris 1 saja)
         $headerRows = (new HeadingRowImport)->toArray($file);
@@ -213,26 +214,26 @@ class BookController extends Controller
 
             // Extract data dari setiap kolom, buang spasi
             $rowData = [
-                'category_id' => trim((string) $row->get('category_id', '')),
+                'kategori' => trim((string) $row->get('kategori', '')),
                 'isbn' => trim((string) $row->get('isbn', '')),
-                'title' => trim((string) $row->get('title', '')),
-                'author' => trim((string) $row->get('author', '')),
-                'publisher' => trim((string) $row->get('publisher', '')),
-                'year' => trim((string) $row->get('year', '')),
-                'rack_location' => trim((string) $row->get('rack_location', '')),
-                'quantity_total' => trim((string) $row->get('quantity_total', '')),
-                'quantity_available' => trim((string) $row->get('quantity_available', '')),
+                'title' => trim((string) $row->get('judul_buku', '')),
+                'author' => trim((string) $row->get('penulis', '')),
+                'publisher' => trim((string) $row->get('penerbit', '')),
+                'year' => trim((string) $row->get('tahun', '')),
+                'rack_location' => trim((string) $row->get('lokasi_rak', '')),
+                'quantity_total' => trim((string) $row->get('stok_total', '')),
+                'quantity_available' => trim((string) $row->get('stok_tersedia', '')),
             ];
 
             // ========== VALIDASI FIELD ==========
             $validator = Validator::make($rowData, [
-                'category_id' => 'required|integer|exists:categories,id',
+                'kategori' => 'required|string|exists:categories,name',
                 // Wajib diisi, harus angka, harus ada di tabel categories
 
                 'isbn' => 'nullable|string|max:50',
                 // Opsional, boleh kosong
 
-                'title' => 'required|string|max:255',
+                'title' => 'required|string|max:255|unique:books,title',
                 // Wajib diisi
 
                 'author' => 'required|string|max:255',
@@ -268,9 +269,11 @@ class BookController extends Controller
                 continue;
             }
 
+            $category = \App\Models\Category::where('name', $rowData['kategori'])->first();
+
             // Data valid, simpan untuk nanti di-insert ke DB
             $payloads[] = [
-                'category_id' => (int) $rowData['category_id'],
+                'category_id' => $category->id,
                 'isbn' => $rowData['isbn'] ?: null,
                 'title' => $rowData['title'],
                 'author' => $rowData['author'],
@@ -301,7 +304,11 @@ class BookController extends Controller
         // Gunakan transaction: jika ada error, rollback semua
         DB::transaction(function () use ($payloads) {
             foreach ($payloads as $payload) {
-                Book::create($payload);
+                $exists = Book::where('isbn', $payload['isbn'])->orWhere('title', $payload['title'])->exists();
+
+                if (!$exists) {
+                    Book::create($payload);
+                }
             }
         });
 
