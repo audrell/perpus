@@ -58,7 +58,7 @@
                         <div class="mb-3 pb-3 border-bottom">
                             <div class="d-flex">
                                 @if ($item->book->cover_path)
-                                    <img src="{{ asset('uploads/covers/' . $item->book->cover_path) }}"
+                                    <img src="{{ asset('storage/' . $item->book->cover_path) }}"
                                         class="img-thumbnail mr-2" style="width:40px;height:54px;object-fit:cover;">
                                 @endif
                                 <div>

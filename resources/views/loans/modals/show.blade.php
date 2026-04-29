@@ -255,7 +255,7 @@
     @if (auth()->user()->hasRole('admin') && $loan->approval_status === 'PENDING')
         <div class="modal fade" id="rejectModal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
-                <form action="{{ route('loans.reject', $loan->id) }}" method="POST">
+                <form action="{{ route('book-loans.reject', $loan->id) }}" method="POST">
                     @csrf
                     <div class="modal-content">
                         <div class="modal-header bg-danger text-white">
