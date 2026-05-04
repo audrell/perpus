@@ -18,25 +18,28 @@
         </div>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4" style="gap:.4rem;">
-
-        <div class="d-flex flex-wrap" style="gap:.4rem;">
+    <div class="row mb-4">
+        <div class="col-12 col-md-8 d-flex flex-wrap mb-2 mb-md-0" style="gap:.4rem;">
             <a href="{{ route('books.export') }}" class="btn btn-outline-primary btn-sm">
-                <i class="fas fa-file-excel mr-1"></i> Export Excel
+                <i class="fas fa-file-excel mr-1"></i>
+                <span class="d-none d-sm-inline">Export Excel</span>
+                <span class="d-sm-none">Excel</span>
             </a>
-
             <a href="{{ route('books.import.template') }}" class="btn btn-success btn-sm">
-                <i class="fas fa-file-download mr-1"></i> Download Template Import
+                <i class="fas fa-file-download mr-1"></i>
+                <span class="d-none d-sm-inline">Download Template Import</span>
+                <span class="d-sm-none">Template</span>
             </a>
-
             <button type="button" class="btn btn-outline-success btn-sm" data-toggle="modal"
                 data-target="#modalImportBook">
-                <i class="fas fa-file-upload mr-1"></i> Upload Import
+                <i class="fas fa-file-upload mr-1"></i>
+                <span class="d-none d-sm-inline">Upload Import</span>
+                <span class="d-sm-none">Upload</span>
             </button>
         </div>
-
-        <div>
-            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalCreateBook">
+        <div class="col-12 col-md-4 text-md-right">
+            <button type="button" class="btn btn-primary btn-sm btn-block d-md-inline-block" data-toggle="modal"
+                data-target="#modalCreateBook">
                 <i class="fas fa-plus mr-1"></i> Create New Book
             </button>
         </div>

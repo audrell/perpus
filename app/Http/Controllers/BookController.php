@@ -102,7 +102,7 @@ class BookController extends Controller
             'quantity_total' => 'required|integer|min:0',
             'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
-        
+
        DB::beginTransaction();
         try {
 
@@ -126,7 +126,7 @@ class BookController extends Controller
             'quantity_available' => $request->quantity_total,
             'cover_path' => $coverPath,
         ]);
-        
+
         // ISI LOGIC
         DB::commit();
         return redirect()->route('books.index')->with('success', 'Buku baru berhasil ditambahkan!');
@@ -153,8 +153,8 @@ class BookController extends Controller
         $data = $request->only(['title', 'cover', 'category_id']);
 
         if ($request->hasFile('cover')) {
-            if ($book->cover_path && \Storage::disk('public')->exists($book->cover_path)) {
-                \Storage::disk('public')->delete($book->cover_path);
+            if ($book->cover_path && Storage::disk('public')->exists($book->cover_path)) {
+                Storage::disk('public')->delete($book->cover_path);
             }
             $data['cover_path'] = $request->file('cover')->store('books', 'public');
         }

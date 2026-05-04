@@ -7,7 +7,7 @@
 @endpush
 
 @section('content')
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div class="container-fluid pt-5"> <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h3 class="h3 mb-0 text-gray-800">User Management</h3>
         <button type="button" class="btn btn-primary btn-sm shadow-sm" data-toggle="modal" data-target="#modalCreateUser">
             <i class="fas fa-plus fa-sm text-white-50"></i> Create New User
@@ -44,6 +44,7 @@
                     <thead>
                         <tr class="bg-primary text-white">
                             <th width="5%" class="text-center">No</th>
+                             <th width="8%" class="text-center">Foto</th>
                             <th class="text-center">Name</th>
                             <th class="text-center">Email</th>
                             <th class="text-center">Roles</th>
@@ -71,7 +72,6 @@
     <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap4.min.js"></script>
-
     <script>
         $(document).ready(function() {
             // DataTable Initialization
@@ -84,6 +84,13 @@
                 columns: [{
                         data: 'nomor',
                         name: 'nomor',
+                        className: 'text-center'
+                    },
+                    {
+                        data: 'photo',
+                        name: 'photo',
+                        orderable: false,
+                        searchable: false,
                         className: 'text-center'
                     },
                     {

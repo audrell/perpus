@@ -53,7 +53,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('roles', App\Http\Controllers\RoleController::class);
     Route::resource('categories', App\Http\Controllers\CategoryController::class);
     Route::resource('books', App\Http\Controllers\BookController::class);
-    Route::resource('members',App\Http\Controllers\MemberController::class);
+    Route::resource('members', App\Http\Controllers\MemberController::class);
     Route::resource('loans', App\Http\Controllers\LoanController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
 
     // EXTENSION
@@ -63,4 +63,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('loan-extensions/user', [App\Http\Controllers\LoanExtensionController::class, 'userIndex'])->name('loan-extensions.user-index');
     Route::post('loan-extensions/{extension}/approve', [App\Http\Controllers\LoanExtensionController::class, 'approve'])->name('loan-extensions.approve');
     Route::post('loan-extensions/{extension}/reject', [App\Http\Controllers\LoanExtensionController::class, 'reject'])->name('loan-extensions.reject');
+
+    // UPDATE PHOTO PROFILE
+    Route::put('/profile/update', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/photo', [App\Http\Controllers\ProfileController::class, 'updatePhoto'])->name('profile.photo');
+    Route::post('/users/{id}/photo', [App\Http\Controllers\UserController::class, 'updatePhoto'])->name('users.photo');
 });

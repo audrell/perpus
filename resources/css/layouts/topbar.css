@@ -1,0 +1,191 @@
+/* ============================================================
+   topbar.css — Disesuaikan dengan class HTML topbar.blade.php
+   ============================================================ */
+
+/* ── Base Topbar ── */
+.topbar.navbar {
+    position: fixed;
+    top: 0;
+    left: 224px;
+    right: 0;
+    height: 70px;
+    min-height: 60px;
+    background-color: #fff;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    z-index: 1030;
+    padding: 0 1.5rem !important;
+    gap: 1rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.sidebar-toggled .topbar.navbar {
+    left: 6.5rem;
+}
+
+/* ── Tombol Hamburger ── */
+#sidebarToggle,
+#sidebarToggleTop,
+#hamburgerMenu {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    padding: 0 !important;
+    margin-right: 1.25rem !important;
+    border-radius: 50%;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    color: #858796;
+    background: #f8f9fc;
+    border: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#sidebarToggle:hover,
+#sidebarToggleTop:hover,
+#hamburgerMenu:hover {
+    background-color: #eaecf4;
+    color: #4e73df;
+}
+
+/* ── Judul Aplikasi ── */
+.topbar.navbar h4 {
+    margin: 0 !important;
+    font-size: 1.25rem; /* Sedikit diperbesar agar lebih tegas */
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+    line-height: 1.5; /* Tambahkan line-height agar tidak terlalu rapat ke atas/bawah */
+    display: flex;
+    align-items: center;
+}
+
+/* ── User Dropdown (kanan) ── */
+.topbar.navbar .navbar-nav {
+    margin-left: auto;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.topbar.navbar .nav-link.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem !important;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.topbar.navbar .nav-link.dropdown-toggle:hover {
+    background-color: #f4f6fc;
+}
+
+.topbar.navbar .img-profile {
+    width: 36px !important;
+    height: 36px !important;
+    border: 2px solid #e3e6f0;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.topbar.navbar .dropdown-menu {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    min-width: 180px;
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+}
+
+.topbar.navbar .dropdown-item {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.875rem;
+    color: #5a5c69;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.topbar.navbar .dropdown-item:hover {
+    background-color: #f4f6fc;
+    color: #4e73df;
+}
+
+.topbar.navbar .dropdown-divider {
+    margin: 0.25rem 0;
+    border-color: #e3e6f0;
+}
+
+/* ── Mobile (< 768px) ── */
+@media (max-width: 767.98px) {
+    .topbar.navbar {
+        left: 0 !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    .topbar.navbar h4 {
+        font-size: 1rem;
+    }
+
+    .topbar.navbar .d-lg-inline {
+        display: none !important;
+    }
+}
+
+/* ── Sangat kecil (< 480px) ── */
+@media (max-width: 479.98px) {
+    .topbar.navbar {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        gap: 0.5rem;
+    }
+
+    .topbar.navbar h4 {
+        font-size: 0.9rem;
+    }
+}
+
+
+#content-wrapper {
+    padding-top: 90px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+@media (max-width: 767.98px) {
+    #content-wrapper {
+        padding-top: 85px;
+    }
+}
+
+/* Menghilangkan whitespace berlebih di sisi kiri dan kanan konten utama */
+#content {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+/* Pastikan card tabel mengambil lebar maksimal yang tersedia */
+.card {
+    width: 100%;
+}
+
+/* Jika menggunakan container-fluid, kita paksa lebarnya maksimal */
+.container-fluid {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+}
+
+/* Menyesuaikan jarak saat sidebar tertutup/terbuka otomatis */
+@media (min-width: 768px) {
+    #content-wrapper {
+        width: 100%;
+    }
+}

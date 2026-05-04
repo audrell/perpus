@@ -7,9 +7,8 @@
 @endpush
 
 @section('content')
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4" style="gap:.5rem;">
         <h3 class="h3 mb-0 text-gray-800">Member</h3>
-
     </div>
 
     <div class="card shadow mb-4">
@@ -85,7 +84,7 @@
             // DataTable Initialization
             $('#data-members').DataTable({
 
-                order: [[0, 'asc']]
+                order: [[0, 'asc']],
                 responsive: true,
                 autoWidth: false,
             });

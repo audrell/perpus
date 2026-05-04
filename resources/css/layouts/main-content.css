@@ -1,0 +1,35 @@
+/* ============================================================
+   main-content.css
+   ✅ Override layout SB Admin 2 agar content tidak tertimpa sidebar
+   ============================================================ */
+
+/* Desktop: content geser ke kanan sejauh lebar sidebar */
+@media (min-width: 768px) {
+    #content-wrapper {
+        margin-left: 224px; /* lebar default SB Admin 2 */
+        transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Saat sidebar di-toggle (SB Admin 2 class .toggled) */
+    body.sidebar-toggled #content-wrapper {
+        margin-left: 6.5rem; /* lebar sidebar saat diciutkan */
+    }
+}
+
+/* Mobile: content full width */
+@media (max-width: 767.98px) {
+    #content-wrapper {
+        margin-left: 0 !important;
+    }
+}
+
+/* Padding konten utama */
+.container-fluid {
+    padding: 1.5rem;
+}
+
+@media (max-width: 575.98px) {
+    .container-fluid {
+        padding: 1rem;
+    }
+}
