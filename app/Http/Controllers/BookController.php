@@ -101,6 +101,30 @@ class BookController extends Controller
             'rack_location' => 'required|string',
             'quantity_total' => 'required|integer|min:0',
             'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ],
+        [
+            'title.required' => 'Title Wajib diisi.',
+            'title.string' => 'Title harus berupa karakter',
+            'title.max' => 'Title maksimal 255 karakter.',
+            'isbn.required' => 'ISBN Wajib diisi',
+            'isbn.string' => 'ISBN harus berupa karakter',
+            'isbn.unique' => 'ISBN sudah terdaftar dalam sistem',
+            'author.required' => 'Author Wajib diiisi',
+            'author.string' => 'Author harus berupa karakter',
+            'publisher.required' => 'Publisher Wajib diisi',
+            'publisher.string' => 'Publisher harus berupa karakter',
+            'year.required ' => 'Tahun Wajib diisi',
+            'year.string' => 'Tahun harus berupa karakter',
+            'category_id.required' => 'Kategori Wajib diisi',
+            'category_id.exist' => 'Kategori yang dipilih tidak ditemukan',
+            'rack_location.required' => 'Lokasi Rak Wajib diisi',
+            'rack_location.string' => 'Lokasi Rak harus berupa karakter',
+            'quantity_total.required' => 'Jumlah Total buku Wajib diisi',
+            'quantity_total.integer' => 'Jumlah Total buku harus berupa angka',
+            'quantity_total.min' => 'Jumlah Total buku tidak boleh kurang dari 0',
+            'cover.image' => 'Cover Image yang diunggah harus berupa gambar',
+            'cover.mimes' => 'Format cover image wajib berupa JPG,JPEG dan PNG',
+            'cover.max' => 'Ukuran gambar maksimal 2MB'
         ]);
 
        DB::beginTransaction();
@@ -145,6 +169,11 @@ class BookController extends Controller
             'title' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ],
+        [
+            'title.required' => 'Title Wajib diisi.',
+            'title.string' => 'Title harus berupa karakter',
+            'title.max' => 'Title maksimal 255 karakter.'
         ]);
 
         DB::beginTransaction();
@@ -188,6 +217,12 @@ class BookController extends Controller
         // ========== STEP 1: VALIDASI FILE ==========
         $request->validate([
             'import_file' => 'required|file|mimes:xlsx,xls|max:5120',
+        ],
+        [
+            'import_file.required' => 'Import File Wajib diisi',
+            'import_file.file' => 'Import harus berupa file yang valid',
+            'import_file.mimes' => 'Format import file harus berupa Excel (.xlsx atau .xls)',
+            'import_file.max' => 'Maksimal ukuran file adalh 5MB'
         ]);
         // Cek: File harus ada, format xlsx/xls, max 5MB
 

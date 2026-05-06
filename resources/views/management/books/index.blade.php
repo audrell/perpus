@@ -12,9 +12,9 @@
 @endpush
 
 @section('content')
-    <div class="row mb-3">
-        <div class="col-12">
-            <h4 class="text-dark">Manajemen Buku</h4>
+    <div class="container-fluid pt-4">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h3 class="h3 mb-0 text-gray-800">Books Management</h3>
         </div>
     </div>
 
@@ -37,11 +37,14 @@
                 <span class="d-sm-none">Upload</span>
             </button>
         </div>
-        <div class="col-12 col-md-4 text-md-right">
-            <button type="button" class="btn btn-primary btn-sm btn-block d-md-inline-block" data-toggle="modal"
-                data-target="#modalCreateBook">
+        <div class="col-2 col-md-4">
+            <button class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#modalCreateBook">
+                    <i class="fas fa-plus fa-sm text-white-50"></i> Tambah Kategori
+                </button>
+            {{-- <button type="button" class="btn btn-primary btn-sm btn-block d-md-inline-block" data-toggle="modal"
+                data-target="">
                 <i class="fas fa-plus mr-1"></i> Create New Book
-            </button>
+            </button> --}}
         </div>
     </div>
 

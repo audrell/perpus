@@ -57,6 +57,10 @@ class PermissionsController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:permissions,name',
+        ],
+        [
+            'name.required' => 'Nama Wajib diisi',
+            'name.unique' => 'Nama permission sudah digunakan'
         ]);
 
         Permission::create([
@@ -75,7 +79,11 @@ class PermissionsController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate(['name' => 'required|unique:permissions,name,' . $id]);
+        $request->validate(['name' => 'required|unique:permissions,name,' . $id],
+        [
+            'name.required' => 'Nama Wajib diisi',
+            'name.unique' => 'Nama Sudah terpakai'
+        ]);
         $permission = Permission::findOrFail($id);
         $permission->update(['name' => $request->name]);
 

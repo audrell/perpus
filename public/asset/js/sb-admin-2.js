@@ -1,5 +1,7 @@
 (function($) {
-  "use strict"; // Start of use strict
+  "use strict";
+
+  console.log('🚀 SB Admin 2 JS Loaded');
 
   // Toggle the side navigation
   $("#sidebarToggle, #sidebarToggleTop").on('click', function(e) {
@@ -7,21 +9,20 @@
     $(".sidebar").toggleClass("toggled");
     if ($(".sidebar").hasClass("toggled")) {
       $('.sidebar .collapse').collapse('hide');
-    };
+    }
   });
 
   // Close any open menu accordions when window is resized below 768px
   $(window).resize(function() {
     if ($(window).width() < 768) {
       $('.sidebar .collapse').collapse('hide');
-    };
-    
-    // Toggle the side navigation when window is resized below 480px
+    }
+
     if ($(window).width() < 480 && !$(".sidebar").hasClass("toggled")) {
       $("body").addClass("sidebar-toggled");
       $(".sidebar").addClass("toggled");
       $('.sidebar .collapse').collapse('hide');
-    };
+    }
   });
 
   // Prevent the content wrapper from scrolling when the fixed side navigation hovered over
@@ -53,4 +54,61 @@
     e.preventDefault();
   });
 
-})(jQuery); // End of use strict
+  // ⭐⭐⭐ AUTO EXPAND/COLLAPSE SIDEBAR ON HOVER ⭐⭐⭐
+  $(document).ready(function() {
+    console.log('🎯 Initializing sidebar hover...');
+    console.log('Sidebar found:', $('#accordionSidebar').length);
+
+    let hoverTimeout;
+
+    // Only on desktop
+    if ($(window).width() > 768) {
+
+      $('#accordionSidebar').hover(
+        // Mouse enter
+        function() {
+          console.log('🖱️ Mouse ENTER sidebar');
+          clearTimeout(hoverTimeout);
+          $(this).addClass('sidebar-expanded');
+        },
+        // Mouse leave
+        function() {
+          console.log('🖱️ Mouse LEAVE sidebar');
+          var $sidebar = $(this);
+          hoverTimeout = setTimeout(function() {
+            $sidebar.removeClass('sidebar-expanded');
+          }, 300);
+        }
+      );
+
+      console.log('✅ Sidebar hover initialized');
+
+    } else {
+      console.log('📱 Mobile detected - hover disabled');
+    }
+
+    // Re-init on resize
+    $(window).on('resize', function() {
+      $('#accordionSidebar').off('mouseenter mouseleave');
+
+      if ($(window).width() > 768) {
+        $('#accordionSidebar').hover(
+          function() {
+            clearTimeout(hoverTimeout);
+            $(this).addClass('sidebar-expanded');
+          },
+          function() {
+            var $sidebar = $(this);
+            hoverTimeout = setTimeout(function() {
+              $sidebar.removeClass('sidebar-expanded');
+            }, 300);
+          }
+        );
+      } else {
+        $('#accordionSidebar').removeClass('sidebar-expanded');
+      }
+    });
+
+  });
+
+})(jQuery);

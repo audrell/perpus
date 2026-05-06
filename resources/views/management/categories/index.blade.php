@@ -7,16 +7,12 @@
 @endpush
 
 @section('content')
-    <div class="row mb-3">
-        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap">
-            <div class="mb-2 mb-lg-0">
-                <h4 class="text-dark">Category Management</h4>
-            </div>
-            <div class="text-right">
-                <button class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#createCategoryModal">
+    <div class="container-fluid pt-4">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h3 class="h3 mb-0 text-gray-800">Category Management</h3>
+            <button class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#createCategoryModal">
                     <i class="fas fa-plus fa-sm text-white-50"></i> Tambah Kategori
                 </button>
-            </div>
         </div>
     </div>
 

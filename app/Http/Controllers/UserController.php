@@ -125,6 +125,17 @@
                 'roles' => 'required',
                 'phone' => 'required',
                 'address' => 'required',
+            ],
+            [
+                'name.required' => 'Nama Wajib diisi',
+                'email.required' => 'Email Wajib diisi',
+                'email.email' => 'Format email tidak valid',
+                'email.unique' => 'Email sudah terdaftar',
+                'password.required' => 'Password Wajib diisi',
+                'password.same' => 'Password Tidak cocok',
+                'roles.required' => 'Roles Wajib diisi',
+                'phone.required' => 'Phone Wajib diisi',
+                'address.required' => 'Alamat Wajib diisi'
             ]);
 
             $input = $request->all();

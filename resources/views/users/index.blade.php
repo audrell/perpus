@@ -7,7 +7,7 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid pt-5"> <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div class="container-fluid pt-4"> <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h3 class="h3 mb-0 text-gray-800">User Management</h3>
         <button type="button" class="btn btn-primary btn-sm shadow-sm" data-toggle="modal" data-target="#modalCreateUser">
             <i class="fas fa-plus fa-sm text-white-50"></i> Create New User

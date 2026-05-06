@@ -7,6 +7,7 @@
     </button>
 </div>
 
+
             <form action="{{ route('books.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
@@ -14,25 +15,25 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Judul Buku</label>
-                                <input type="text" name="title" class="form-control" required>
+                                <input type="text" name="title" class="form-control" required >
                             </div>
                             <div class="form-group">
                                 <label>ISBN</label>
-                                <input type="text" name="isbn" class="form-control" required>
+                                <input type="text" name="isbn" class="form-control" required >
                             </div>
                             <div class="form-group">
                                 <label>Penulis</label>
-                                <input type="text" name="author" class="form-control" required>
+                                <input type="text" name="author" class="form-control" required >
                             </div>
                             <div class="form-group">
                                 <label>Penerbit</label>
-                                <input type="text" name="publisher" class="form-control" required>
+                                <input type="text" name="publisher" class="form-control"  required >
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Kategori</label>
-                                <select name="category_id" class="form-control" required>
+                                <select name="category_id" class="form-control" required >
                                     <option value="">-- Pilih Kategori --</option>
                                     @foreach($categories as $cat)
                                         <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -47,13 +48,13 @@
                                 <div class="col-6">
                                     <div class="form-group">
                                         <label>Tahun</label>
-                                        <input type="number" name="year" class="form-control" required>
+                                        <input type="number" name="year" class="form-control" required >
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="form-group">
-                                        <label>Total Stok</label>
-                                        <input type="number" name="quantity_total" class="form-control" required>
+                                        <label>Total Stok</label>   
+                                        <input type="number" name="quantity_total" class="form-control" required >
                                     </div>
                                 </div>
                             </div>

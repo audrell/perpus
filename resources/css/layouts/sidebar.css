@@ -11,21 +11,62 @@
 #accordionSidebar {
     border-right: none !important;
     box-shadow: 4px 0 25px rgba(0, 0, 0, 0.1);
+    /* ⭐ AUTO COLLAPSE - Lebar default hanya icon */
+    width: 80px !important;
+    overflow: visible !important;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ⭐ SIDEBAR EXPANDED (saat hover) */
+#accordionSidebar:hover,
+#accordionSidebar.sidebar-expanded {
+    width: 224px !important;
 }
 
 /* 2. Menu Item Styling (Floating Pill Style) */
 .sidebar .nav-item .nav-link {
-    margin: 4px 12px !important; /* Memberikan ruang agar item terlihat melayang */
+    margin: 4px 12px !important;
     width: auto !important;
-    border-radius: 12px !important; /* Sudut tumpul modern */
+    border-radius: 12px !important;
     padding: 12px 16px !important;
     color: rgba(255, 255, 255, 0.7) !important;
     font-weight: 500;
+    display: flex !important;
+    align-items: center !important;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+/* ⭐ Icon positioning - Center saat collapsed */
+.sidebar .nav-item .nav-link i {
+    min-width: 24px;
+    text-align: center;
+    transition: margin 0.3s ease;
+}
+
+/* ⭐ Text menu - Sembunyikan saat collapsed */
+.sidebar .nav-item .nav-link span {
+    opacity: 0;
+    visibility: hidden;
+    width: 0;
+    overflow: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease, width 0.3s ease;
+    margin-left: 0;
+}
+
+/* ⭐ Tampilkan text saat hover/expanded */
+#accordionSidebar:hover .nav-item .nav-link span,
+#accordionSidebar.sidebar-expanded .nav-item .nav-link span {
+    opacity: 1;
+    visibility: visible;
+    width: auto;
+    margin-left: 12px;
+    transition: opacity 0.3s ease 0.15s, visibility 0.3s ease 0.15s, width 0.3s ease;
 }
 
 /* Efek saat Menu Aktif (Sangat menyatu dengan tema Home) */
 .sidebar .nav-item.active .nav-link {
-    background: rgba(255, 255, 255, 0.15) !important; /* Efek transparan/glassmorphism */
+    background: rgba(255, 255, 255, 0.15) !important;
     color: #fff !important;
     backdrop-filter: blur(4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -35,7 +76,7 @@
 .sidebar .nav-item .nav-link:hover {
     background: rgba(255, 255, 255, 0.1) !important;
     color: #fff !important;
-    transform: translateX(4px); /* Animasi geser halus */
+    transform: translateX(4px);
 }
 
 /* 3. Sidebar Heading (Lebih Eksklusif) */
@@ -45,14 +86,44 @@
     font-weight: 700 !important;
     letter-spacing: 1.2px;
     padding: 1.5rem 1.8rem 0.5rem !important;
+    /* ⭐ Sembunyikan heading saat collapsed */
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease, height 0.3s ease;
+}
+
+/* ⭐ Tampilkan heading saat expanded */
+#accordionSidebar:hover .sidebar-heading,
+#accordionSidebar.sidebar-expanded .sidebar-heading {
+    opacity: 1;
+    visibility: visible;
+    height: auto;
+    transition: opacity 0.3s ease 0.15s, visibility 0.3s ease 0.15s, height 0.3s ease;
 }
 
 /* 4. Dropdown / Sub-menu (Glass Style) */
 .collapse-inner {
-    background: rgba(255, 255, 255, 0.05) !important; /* Transparan halus */
+    background: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(255, 255, 255, 0.1);
     margin: 0 12px 10px 12px;
     border-radius: 12px !important;
+    /* ⭐ Sembunyikan dropdown saat collapsed */
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease, max-height 0.3s ease;
+}
+
+/* ⭐ Tampilkan dropdown saat expanded DAN collapse terbuka */
+#accordionSidebar:hover .collapse.show .collapse-inner,
+#accordionSidebar.sidebar-expanded .collapse.show .collapse-inner {
+    opacity: 1;
+    visibility: visible;
+    max-height: 500px;
+    transition: opacity 0.3s ease 0.2s, visibility 0.3s ease 0.2s, max-height 0.3s ease;
 }
 
 .collapse-item {
@@ -68,24 +139,101 @@
 
 .collapse-item.active {
     background: #fff !important;
-    color: #1e3c72 !important; /* Warna kontras saat aktif */
+    color: #1e3c72 !important;
     font-weight: 700 !important;
 }
 
 /* 5. Logo Brand Area */
 .sidebar-brand {
     height: auto !important;
-    padding: 2.5rem 1.5rem !important; /* Lebih lega di area logo */
+    padding: 2.5rem 1.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: justify-content 0.3s ease;
+}
+
+/* ⭐ Center logo saat collapsed */
+#accordionSidebar .sidebar-brand {
+    justify-content: center !important;
+}
+
+/* ⭐ Align left saat expanded */
+#accordionSidebar:hover .sidebar-brand,
+#accordionSidebar.sidebar-expanded .sidebar-brand {
+    justify-content: flex-start !important;
+}
+
+.sidebar-brand-icon {
+    flex-shrink: 0;
+    transition: margin 0.3s ease;
 }
 
 .sidebar-brand-text {
     font-weight: 800 !important;
     letter-spacing: 1px;
     text-transform: uppercase;
+    /* ⭐ Sembunyikan text logo saat collapsed */
+    opacity: 0;
+    visibility: hidden;
+    width: 0;
+    overflow: hidden;
+    margin: 0 !important;
+    transition: opacity 0.2s ease, visibility 0.2s ease, width 0.3s ease, margin 0.3s ease;
+}
+
+/* ⭐ Tampilkan text logo saat expanded */
+#accordionSidebar:hover .sidebar-brand-text,
+#accordionSidebar.sidebar-expanded .sidebar-brand-text {
+    opacity: 1;
+    visibility: visible;
+    width: auto;
+    margin-left: 0.5rem !important;
+    transition: opacity 0.3s ease 0.15s, visibility 0.3s ease 0.15s, width 0.3s ease, margin 0.3s ease;
 }
 
 /* 6. Divider Halus */
 .sidebar-divider {
     border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
     margin: 1rem 1.5rem !important;
+}
+
+/* ⭐ RESPONSIVE - Disable auto-collapse di mobile */
+@media (max-width: 768px) {
+    #accordionSidebar {
+        width: 224px !important;
+    }
+
+    #accordionSidebar .sidebar-brand-text,
+    #accordionSidebar .nav-item .nav-link span,
+    #accordionSidebar .sidebar-heading {
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: auto !important;
+        height: auto !important;
+    }
+
+    #accordionSidebar .sidebar-brand {
+        justify-content: flex-start !important;
+    }
+}
+
+/* ⭐ Fix untuk dropdown yang tidak expand otomatis */
+#accordionSidebar .nav-link[data-toggle="collapse"] {
+    position: relative;
+}
+
+/* ⭐ Pastikan collapse arrow tetap terlihat */
+#accordionSidebar .nav-link[data-toggle="collapse"]::after {
+    content: '\f107';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    right: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#accordionSidebar:hover .nav-link[data-toggle="collapse"]::after,
+#accordionSidebar.sidebar-expanded .nav-link[data-toggle="collapse"]::after {
+    opacity: 1;
 }

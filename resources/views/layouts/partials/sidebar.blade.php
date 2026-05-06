@@ -6,8 +6,6 @@
 
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-<link rel="stylesheet" href="{{ asset('css/layout/sidebar.css') }}">
-
     <a class="sidebar-brand d-flex align-items-center justify-content-start" href="{{ url('/home') }}">
         @if (!empty($setting->image))
             <div class="sidebar-brand-icon">
@@ -119,10 +117,10 @@
                             href="{{ route('loan-extensions.admin-index') }}">Permohonan Perpanjangan</a>
                     @endcan
 
-                    @can('loan-extensions.index')
+                    {{-- @can('loan-extensions.index')
                         <a class="collapse-item {{ request()->is('loan-extensions') ? 'active' : '' }}"
                             href="{{ route('loan-extensions.user-index') }}">Perpanjangan Saya</a>
-                    @endcan
+                    @endcan --}}
                 </div>
             </div>
         </li>

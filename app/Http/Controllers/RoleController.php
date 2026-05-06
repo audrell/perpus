@@ -102,7 +102,13 @@ class RoleController extends Controller
         $this->validate($request, [
             'name' => 'required|unique:roles,name',
             'permission' => 'required',
-        ]);
+        ],
+        [
+            'name.required' => 'Nama roles Wajib diisi',
+            'name.unique' => 'Nama roles sudah terisi',
+            'permission' => 'Permission Wajib diisi'
+        ]
+        );
 
         $permissionsID = array_map(function ($value) {
             return (int) $value;
@@ -154,6 +160,10 @@ class RoleController extends Controller
         $this->validate($request, [
             'name' => 'required',
             'permission' => 'required',
+        ],
+        [
+            'name.required' => 'Nama Wajib diisi',
+            'permission.required' => 'Permission Wajib diisi'
         ]);
 
         $role = Role::find($id);
